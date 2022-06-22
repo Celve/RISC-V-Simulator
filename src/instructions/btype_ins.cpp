@@ -36,18 +36,39 @@ void BTypeIns::CalcImm(u32 ins) {
 }
 
 void BTypeIns::Execute() {
+  int reg1 = regs_->GetReg(rs1_);
+  int reg2 = regs_->GetReg(rs2_);
+  int imm = imm_;
   switch (ins_) {
     case BIns::BEQ:
+      if (reg1 == reg2) {
+        regs_->SetPc(imm);
+      }
       break;
     case BIns::BNE:
+      if (reg1 != reg2) {
+        regs_->SetPc(imm);
+      }
       break;
     case BIns::BLT:
+      if (reg1 <= reg2) {
+        regs_->SetPc(imm);
+      }
       break;
     case BIns::BGE:
+      if (reg1 >= reg2) {
+        regs_->SetPc(imm);
+      }
       break;
     case BIns::BLTU:
+      if (u32(reg1) <= u32(reg2)) {
+        regs_->SetPc(imm);
+      }
       break;
     case BIns::BGEU:
+      if (u32(reg1) >= u32(reg2)) {
+        regs_->SetPc(imm);
+      }
       break;
   }
 }

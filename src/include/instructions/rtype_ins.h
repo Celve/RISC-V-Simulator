@@ -2,6 +2,8 @@
 
 #include "common/config.h"
 #include "instructions/riscv_type_ins.h"
+#include "storage/memory.h"
+#include "storage/registers.h"
 
 namespace riscv {
 
@@ -13,7 +15,9 @@ class RTypeIns : public RISCVTypeIns {
  public:
   enum class RIns { ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND };
 
-  explicit RTypeIns(u32 ins) { Init(ins); }
+  explicit RTypeIns(u32 ins, Memory *memory, Registers *regs) : memory_(memory), regs_(regs) {
+    Init(ins);
+  }
   void Init(u32 ins) override;
   void Execute() override;
 
@@ -28,6 +32,9 @@ class RTypeIns : public RISCVTypeIns {
   u32 rs1_;
   u32 rs2_;
   u32 rd_;
+
+  Memory *memory_;
+  Registers *regs_;
 };
 
 }  // namespace riscv

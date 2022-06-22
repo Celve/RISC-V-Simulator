@@ -5,7 +5,7 @@
 namespace riscv {
 
 void UTypeIns::Init(u32 ins) {
-  imm_ = Get31To12(ins);
+  imm_ = Get31To12(ins) << 12;
   rd_ = Get11To7(ins);
   u32 part1 = Get6To0(ins);
 }
@@ -23,8 +23,10 @@ void UTypeIns::IdentifyOp(u32 part1) {
 void UTypeIns::Execute() {
   switch (ins_) {
     case UIns::LUI:
+      regs_->SetReg(rd_, imm_);
       break;
     case UIns::AUIPC:
+      regs_->SetReg(rd_, regs_->GetPc() + imm_);
       break;
   }
 }

@@ -18,8 +18,10 @@ void JTypeIns::CalcImm(u32 ins) {
 }
 
 void JTypeIns::Execute() {
+  u32 pc = regs_->GetPc();
   switch (ins_) {
     case JIns::JAL:
+      regs_->SetReg(rd_, pc + static_cast<int>(imm_));
       break;
   }
 }
