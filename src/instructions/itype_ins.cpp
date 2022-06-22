@@ -1,5 +1,8 @@
 #include "instructions/itype_ins.h"
 
+#include <atomic>
+#include <iostream>
+
 #include "common/utils.h"
 
 namespace riscv {
@@ -19,6 +22,16 @@ void ITypeIns::Init(u32 ins) {
 void ITypeIns::IdentifyOp(u32 part1, u32 part2, u32 part3, u32 shamt) {
   if (part2 == 0 && part3 == 103) {
     ins_ = IIns::JALR;
+  } else if (part2 == 0 && part3 == 3) {
+    ins_ = IIns::LB;
+  } else if (part2 == 1 && part3 == 3) {
+    ins_ = IIns::LH;
+  } else if (part2 == 2 && part3 == 3) {
+    ins_ = IIns::LW;
+  } else if (part2 == 4 && part3 == 3) {
+    ins_ = IIns::LBU;
+  } else if (part2 == 5 && part3 == 3) {
+    ins_ = IIns::LHU;
   } else if (part2 == 0 && part3 == 19) {
     ins_ = IIns::ADDI;
   } else if (part2 == 2 && part3 == 19) {
@@ -47,9 +60,28 @@ void ITypeIns::IdentifyOp(u32 part1, u32 part2, u32 part3, u32 shamt) {
 
 void ITypeIns::Execute() {
   u32 reg1 = regs_->GetReg(rs1_);
-  int imm = int(imm_);
+  int imm = Extend11(imm_);
   switch (ins_) {
     case IIns::JALR:
+      regs_->SetReg(rd_, regs_->GetPc() + 4);
+      regs_->SetPc((reg1 + imm) & (~1));
+      return;
+    case IIns::LB:
+      regs_->SetReg(rd_, Extend8(memory_->GetByte(reg1 + imm)));
+      break;
+    case IIns::LH:
+      regs_->SetReg(rd_, Extend16(memory_->GetHalf(reg1 + imm)));
+      break;
+    case IIns::LW:
+      // std::cout << "lw: " << rs1_ << " " << rd_ << " " << reg1 + imm << std::endl;
+      regs_->SetReg(rd_, memory_->GetWord(reg1 + imm));
+      break;
+    case IIns::LBU:
+      // std::cout << "lbu: " << rs1_ << " " << rd_ << " " << reg1 + imm << std::endl;
+      regs_->SetReg(rd_, memory_->GetByte(reg1 + imm));
+      break;
+    case IIns::LHU:
+      regs_->SetReg(rd_, memory_->GetHalf(reg1 + imm));
       break;
     case IIns::ADDI:
       regs_->SetReg(rd_, reg1 + imm);
@@ -70,17 +102,22 @@ void ITypeIns::Execute() {
       regs_->SetReg(rd_, reg1 & imm);
       break;
     case IIns::SLLI:
-      // TODO(celve): make sure imm[5] = 0
-      regs_->SetReg(rd_, reg1 << imm);
+      if ((imm >> 5 & 1) == 0) {
+        regs_->SetReg(rd_, reg1 << imm);
+      }
       break;
     case IIns::SRLI:
-      // TODO(celve): make sure imm[5] = 0
-      regs_->SetReg(rd_, reg1 >> imm);
+      if ((imm >> 5 & 1) == 0) {
+        regs_->SetReg(rd_, reg1 >> imm);
+      }
       break;
     case IIns::SRAI:
-      regs_->SetReg(rd_, int(reg1) >> imm);
+      if ((imm >> 5 & 1) == 0) {
+        regs_->SetReg(rd_, int(reg1) >> imm);
+      }
       break;
   }
+  regs_->IncreasePc(4);
 }
 
 }  // namespace riscv

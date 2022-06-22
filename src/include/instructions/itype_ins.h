@@ -2,15 +2,31 @@
 
 #include "common/config.h"
 #include "common/utils.h"
-#include "instructions/riscv_type_ins.h"
+#include "instructions/riscv_ins.h"
 #include "storage/memory.h"
 #include "storage/registers.h"
 
 namespace riscv {
 
-class ITypeIns : public RISCVTypeIns {
+class ITypeIns : public RISCVIns {
  public:
-  enum class IIns { JALR, ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI };
+  enum class IIns {
+    JALR,
+    LB,
+    LH,
+    LW,
+    LBU,
+    LHU,
+    ADDI,
+    SLTI,
+    SLTIU,
+    XORI,
+    ORI,
+    ANDI,
+    SLLI,
+    SRLI,
+    SRAI
+  };
 
   explicit ITypeIns(u32 ins, Memory *memory, Registers *regs) : memory_(memory), regs_(regs) {
     Init(ins);

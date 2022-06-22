@@ -1,6 +1,7 @@
 #include "instructions/jtype_ins.h"
 
 #include <cstdio>
+#include <iostream>
 
 #include "common/utils.h"
 
@@ -19,9 +20,11 @@ void JTypeIns::CalcImm(u32 ins) {
 
 void JTypeIns::Execute() {
   u32 pc = regs_->GetPc();
+  int imm = Extend20(imm_);
   switch (ins_) {
     case JIns::JAL:
-      regs_->SetReg(rd_, pc + static_cast<int>(imm_));
+      regs_->SetReg(rd_, pc + 4);
+      regs_->SetPc(pc + imm);
       break;
   }
 }

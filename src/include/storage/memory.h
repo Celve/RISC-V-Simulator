@@ -6,8 +6,14 @@ namespace riscv {
 
 class Memory {
  public:
-  u32 Get(int index);
-  void Set(int index, u32 value);
+  Memory();
+
+  u32 GetByte(int index);
+  u32 GetHalf(int index);
+  u32 GetWord(int index);
+  void SetByte(int index, u32 value);
+  void SetHalf(int index, u32 value);
+  void SetWord(int index, u32 value);
 
  private:
   u32 units_[MEMORY_SIZE];

@@ -2,5 +2,14 @@
 build/
 
 # ide files
-.cache
-.vscode
+.cache/
+.vscode/
+.idea/
+cmake-build-debug/
+
+# redundant files
+*.txt
+
+# data files
+data/
+

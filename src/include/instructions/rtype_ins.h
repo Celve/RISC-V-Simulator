@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/config.h"
-#include "instructions/riscv_type_ins.h"
+#include "instructions/riscv_ins.h"
 #include "storage/memory.h"
 #include "storage/registers.h"
 
@@ -11,7 +11,7 @@ namespace riscv {
  * @brief
  * 10 r-type instruction
  */
-class RTypeIns : public RISCVTypeIns {
+class RTypeIns : public RISCVIns {
  public:
   enum class RIns { ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND };
 

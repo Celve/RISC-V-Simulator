@@ -20,3 +20,6 @@ include_directories(src/include)
 add_subdirectory(src)
 add_subdirectory(test)
 
+# add executable
+add_executable(code main.cpp)
+target_link_libraries(code source_shared)

@@ -50,26 +50,26 @@ void RTypeIns::Execute() {
       regs_->SetReg(rd_, reg1 + reg2);
       break;
     case RIns::SUB:
-      regs_->SetReg(rd_, reg2 - reg1);
+      regs_->SetReg(rd_, reg1 - reg2);
       break;
     case RIns::SLL:
-      regs_->SetReg(rd_, reg1 << reg2);
+      regs_->SetReg(rd_, reg1 << (reg2 & 0x1F));
       break;
     case RIns::SLT:
       // TODO(celve): I'm not sure here
-      regs_->SetReg(rd_, static_cast<u32>(static_cast<int>(reg1) < static_cast<int>(reg2)));
+      regs_->SetReg(rd_, u32(int(reg1) < int(reg2)));
       break;
     case RIns::SLTU:
-      regs_->SetReg(rd_, static_cast<u32>(reg1 < reg2));
+      regs_->SetReg(rd_, u32(reg1 < reg2));
       break;
     case RIns::XOR:
       regs_->SetReg(rd_, reg1 ^ reg2);
       break;
     case RIns::SRL:
-      regs_->SetReg(rd_, reg1 >> reg2);
+      regs_->SetReg(rd_, reg1 >> (reg2 & 0x1F));
       break;
     case RIns::SRA:
-      regs_->SetReg(rd_, static_cast<int>(reg1) >> reg2);
+      regs_->SetReg(rd_, (int(reg1)) >> (reg2 & 0x1F));
       break;
     case RIns::OR:
       regs_->SetReg(rd_, reg1 | reg2);
@@ -78,6 +78,7 @@ void RTypeIns::Execute() {
       regs_->SetReg(rd_, reg1 & reg2);
       break;
   }
+  regs_->IncreasePc(4);
 }
 
 }  // namespace riscv

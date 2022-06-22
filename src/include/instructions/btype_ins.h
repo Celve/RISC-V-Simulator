@@ -1,13 +1,13 @@
 #pragma once
 
 #include "common/config.h"
-#include "instructions/riscv_type_ins.h"
+#include "instructions/riscv_ins.h"
 #include "storage/memory.h"
 #include "storage/registers.h"
 
 namespace riscv {
 
-class BTypeIns : public RISCVTypeIns {
+class BTypeIns : public RISCVIns {
  public:
   enum class BIns { BEQ, BNE, BLT, BGE, BLTU, BGEU };
 

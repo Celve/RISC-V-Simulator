@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/config.h"
-#include "instructions/riscv_type_ins.h"
+#include "instructions/riscv_ins.h"
 #include "storage/memory.h"
 #include "storage/registers.h"
 
@@ -11,7 +11,7 @@ namespace riscv {
  * @brief
  * 1 j-type instrction
  */
-class JTypeIns : public RISCVTypeIns {
+class JTypeIns : public RISCVIns {
  public:
   enum class JIns { JAL };
 
