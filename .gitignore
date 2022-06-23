@@ -13,3 +13,5 @@ cmake-build-debug/
 # data files
 data/
 
+# my files
+Makefile
