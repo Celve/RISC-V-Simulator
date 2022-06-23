@@ -12,7 +12,7 @@ include_directories(src/include)
 
 # add subdirectory
 add_subdirectory(src)
-#add_subdirectory(test)
+add_subdirectory(test)
 
 # add executable
 add_executable(code main.cpp)
