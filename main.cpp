@@ -52,18 +52,14 @@ void Execute() {
     // fetch instruction
     auto pc = regs->GetPc();
 
-    auto hex1 = memory->GetByte(pc), hex2 = memory->GetByte(pc + 1),
-         hex3 = memory->GetByte(pc + 2), hex4 = memory->GetByte(pc + 3);
-
-    auto ins_hex = riscv::AdjoinFourHex(hex1, hex2, hex3, hex4);
+    auto ins_hex = memory->GetWord(pc);
     if (ins_hex == 0xFF00513) {
       printf("%u\n", regs->GetReg(10) & 0xFFU);
       break;
     }
 
     // decode
-    riscv::RISCVIns *ins =
-        riscv::GenerateIns(hex1, hex2, hex3, hex4, memory, regs);
+    riscv::RISCVIns *ins = riscv::GenerateIns(ins_hex, memory, regs);
 
     // execute
     ins->Execute();
@@ -76,7 +72,6 @@ void Execute() {
 }
 
 int main() {
-//  freopen("data/testcases/superloop.data", "r", stdin);
   SetUp();
   Input();
   Execute();

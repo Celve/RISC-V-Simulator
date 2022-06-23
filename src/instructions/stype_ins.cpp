@@ -23,12 +23,12 @@ void STypeIns::Init(u32 ins) {
   }
 }
 
-void STypeIns::CalcImm(u32 ins) { imm_ = ((ins >> 25 & 0x7F) << 5) | (ins >> 7 & 0x1F); }
+void STypeIns::CalcImm(u32 ins) { imm_ = Extend11(((ins >> 25 & 0x7F) << 5) | (ins >> 7 & 0x1F)); }
 
 void STypeIns::Execute() {
   u32 reg1 = regs_->GetReg(rs1_);
   u32 reg2 = regs_->GetReg(rs2_);
-  int imm = Extend11(imm_);
+  int imm = imm_;
   switch (ins_) {
     case SIns::SB:
       // std::cout << "sb: " << rs1_ << " " << rs2_ << " " << reg1 + imm << std::endl;

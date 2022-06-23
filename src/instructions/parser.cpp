@@ -15,21 +15,27 @@ namespace riscv {
 RISCVIns *GenerateIns(u32 ins, Memory *memory, Registers *regs) {
   u32 part1 = Get6To0(ins);
   if (part1 == 55 || part1 == 23) {
+    // UTypeIns(ins, memory, regs).Execute();
     return new UTypeIns(ins, memory, regs);
   }
   if (part1 == 111) {
+    // JTypeIns(ins, memory, regs).Execute();
     return new JTypeIns(ins, memory, regs);
   }
   if (part1 == 103 || part1 == 19 || part1 == 3) {
+    // ITypeIns(ins, memory, regs).Execute();
     return new ITypeIns(ins, memory, regs);
   }
   if (part1 == 99) {
+    // BTypeIns(ins, memory, regs).Execute();
     return new BTypeIns(ins, memory, regs);
   }
   if (part1 == 51) {
+    // RTypeIns(ins, memory, regs).Execute();
     return new RTypeIns(ins, memory, regs);
   }
   if (part1 == 35) {
+    // STypeIns(ins, memory, regs).Execute();
     return new STypeIns(ins, memory, regs);
   }
   /* it should not be here */

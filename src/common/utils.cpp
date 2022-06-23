@@ -29,35 +29,35 @@ u32 AdjoinFourHex(u32 number1, u32 number2, u32 number3, u32 number4) {
   return (number4 << 24) | (number3 << 16) | (number2 << 8) | number1;
 }
 
-int Extend20(u32 number) {
+u32 Extend20(u32 number) {
   if ((number >> 20 & 1) != 0U) {
     return number | 0xFFE00000;
   }
   return number;
 }
 
-int Extend11(u32 number) {
+u32 Extend11(u32 number) {
   if ((number >> 11 & 1) != 0U) {
     return number | 0xFFFFF000;
   }
   return number;
 }
 
-int Extend8(u32 number) {
+u32 Extend8(u32 number) {
   if ((number >> 8 & 1) != 0U) {
     return number | 0xFFFFFF00;
   }
   return number;
 }
 
-int Extend16(u32 number) {
+u32 Extend16(u32 number) {
   if ((number >> 16 & 1) != 0U) {
     return number | 0xFFFF0000;
   }
   return number;
 }
 
-int Extend12(u32 number) {
+u32 Extend12(u32 number) {
   if ((number >> 12 & 1) != 0U) {
     return number | 0xFFFFE000;
   }

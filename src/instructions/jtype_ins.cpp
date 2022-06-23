@@ -14,13 +14,13 @@ void JTypeIns::Init(u32 ins) {
 }
 
 void JTypeIns::CalcImm(u32 ins) {
-  imm_ = ((ins >> 31 & 0x1) << 20) | ((ins >> 21 & 0x3FF) << 1) | ((ins >> 20 & 0x1) << 11) |
-         ((ins >> 12 & 0xFF) << 12);
+  imm_ = Extend20(((ins >> 31 & 0x1) << 20) | ((ins >> 21 & 0x3FF) << 1) |
+                  ((ins >> 20 & 0x1) << 11) | ((ins >> 12 & 0xFF) << 12));
 }
 
 void JTypeIns::Execute() {
   u32 pc = regs_->GetPc();
-  int imm = Extend20(imm_);
+  int imm = imm_;
   switch (ins_) {
     case JIns::JAL:
       regs_->SetReg(rd_, pc + 4);

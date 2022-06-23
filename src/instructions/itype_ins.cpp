@@ -17,6 +17,7 @@ void ITypeIns::Init(u32 ins) {
   u32 part3 = Get6To0(ins);
 
   IdentifyOp(part1, part2, part3, shamt);
+  imm_ = Extend11(imm_);
 }
 
 void ITypeIns::IdentifyOp(u32 part1, u32 part2, u32 part3, u32 shamt) {

@@ -22,14 +22,14 @@ u32 Get31To12(u32 number);
 
 u32 AdjoinFourHex(u32 number1, u32 number2, u32 number3, u32 number4);
 
-int Extend20(u32 number);
+u32 Extend20(u32 number);
 
-int Extend11(u32 number);
+u32 Extend11(u32 number);
 
-int Extend8(u32 number);
+u32 Extend8(u32 number);
 
-int Extend16(u32 number);
+u32 Extend16(u32 number);
 
-int Extend12(u32 number);
+u32 Extend12(u32 number);
 
 }  // namespace riscv
