@@ -76,7 +76,7 @@ void Execute() {
 }
 
 int main() {
-  freopen("data/testcases/superloop.data", "r", stdin);
+//  freopen("data/testcases/superloop.data", "r", stdin);
   SetUp();
   Input();
   Execute();
