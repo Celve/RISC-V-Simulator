@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace riscv {
 
 /**
@@ -8,6 +10,7 @@ namespace riscv {
  */
 using u32 = unsigned;
 using i32 = int;
+using u8 = uint8_t;
 
 /**
  * @brief

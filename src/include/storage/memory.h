@@ -16,7 +16,7 @@ class Memory {
   void SetWord(int index, u32 value);
 
  private:
-  u32 units_[MEMORY_SIZE];
+  u8 units_[MEMORY_SIZE];
 };
 
 }  // namespace riscv
