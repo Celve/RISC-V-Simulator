@@ -1,5 +1,6 @@
 #include "storage/tomasulo.h"
 
+#include "instruction/riscv_general_type.h"
 #include "instruction/riscv_ins.h"
 #include "storage/reservation_station.h"
 
@@ -41,7 +42,7 @@ bool Tomasulo::Issue() {
   iq_->Pop();
   RiscvIns *ins = new RiscvIns(hexs);
 
-  if (!ins->IsLoad() && !ins->IsStore()) {
+  if (ins->GetGeneralType() != RiscvGeneralType::LType && ins->GetGeneralType() != RiscvGeneralType::SType) {
     /* find avaiable RS and ROB */
     int rss_index = rss_->Available();
     int rob_index = rob_->Available();
@@ -58,29 +59,37 @@ bool Tomasulo::Issue() {
     rob_->SetIns(rob_index, ins);
 
     /* for FP operations and store */
-    if (ins->IsFp()) {
+    if (ins->GetGeneralType() == RiscvGeneralType::BType) {
+      FetchRt(ins->GetRt(), rss_index);
+    } else if (ins->GetGeneralType() == RiscvGeneralType::IType) {
+      regs_->SetReorder(ins->GetRd(), rob_index);
+    } else if (ins->GetGeneralType() == RiscvGeneralType::JType) {
+      // TODO(celve): consider whether to do computation inside alu
+    } else if (ins->GetGeneralType() == RiscvGeneralType::RType) {
       FetchRt(ins->GetRt(), rss_index);
       regs_->SetReorder(ins->GetRd(), rob_index);
+    } else if (ins->GetGeneralType() == RiscvGeneralType::UType) {
+      // TODO(celve): consider whether to do computation inside alu
     }
   } else {
-    int lb_index = lb_->Available();
+    int lsb_index = lsb_->Available();
     int rob_index = rob_->Available();
-    lb_->Init(lb_index);
+    lsb_->Init(lsb_index);
     rob_->Init(rob_index);
-    FetchRs(ins->GetRs(), lb_index);
-    lb_->MakeBusy(lb_index);
-    lb_->SetDest(lb_index, rob_index);
+    FetchRs(ins->GetRs(), lsb_index);
+    lsb_->MakeBusy(lsb_index);
+    lsb_->SetDest(lsb_index, rob_index);
     rob_->SetIns(rob_index, ins);
 
-    /* for FP operations and store */
-    if (ins->IsStore()) {
-      FetchRt(ins->GetRt(), lb_index);
-      lb_->SetA(lb_index, ins->GetImm());
+    /* for store */
+    if (ins->GetGeneralType() == RiscvGeneralType::SType) {
+      FetchRt(ins->GetRt(), lsb_index);
+      lsb_->SetA(lsb_index, ins->GetImm());
     }
 
     /* for load */
-    if (ins->IsLoad()) {
-      lb_->SetA(lb_index, ins->GetImm());
+    if (ins->GetGeneralType() == RiscvGeneralType::LType) {
+      lsb_->SetA(lsb_index, ins->GetImm());
       regs_->SetReorder(ins->GetRd(), rob_index);
     }
   }

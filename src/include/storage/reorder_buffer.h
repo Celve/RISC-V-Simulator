@@ -1,5 +1,6 @@
 #pragma once
 
+#include "container/circular_queue.hpp"
 #include "instruction/riscv_ins.h"
 #include "storage/registers.h"
 
@@ -35,7 +36,7 @@ class ReorderBuffer {
   };
 
  private:
-  ReorderBufferEntry entries_[REORDER_BUFFER_SIZE];
+  CircularQueue<ReorderBufferEntry> entries_[REORDER_BUFFER_SIZE];
 };
 
 }  // namespace riscv

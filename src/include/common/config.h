@@ -23,6 +23,7 @@ using u8 = uint8_t;
 #define RESERVATION_STATION_SIZE 32  // the size of reservation station
 #define LOAD_STORE_BUFFER_SIZE 32    // the size of load store buffer
 #define INSTRUCTION_QUEUE_SIZE 32    // the size of instruction queue
+#define QUEUE_SIZE 32                // the size of queue
 
 #define INVALID_REORDER 0xFFFFFFFFU    // the invalid reorder number
 #define INVALID_REGISTER 0xFFFFFFFFU   // the invalid register number

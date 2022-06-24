@@ -1,20 +1,22 @@
 #pragma once
 
+#include <queue>
+
 #include "common/config.h"
+#include "container/circular_queue.hpp"
 #include "storage/reservation_station.h"
 
 namespace riscv {
 
-class LoadBufferEntry : public ReservationStationEntry {
+class LoadStoreBufferEntry : public ReservationStationEntry {
  public:
  private:
   u32 count_;
   bool commit_;
 };
 
-class LoadBuffer {
+class LoadStoreBuffer {
  public:
-  int Available();
   void SetVj(int index, u32 value);
   void SetVk(int index, u32 value);
   void SetQj(int index, u32 value);
@@ -24,8 +26,10 @@ class LoadBuffer {
   void MakeBusy(int index);
   void Init(int index);
 
+  bool Execute();
+
  private:
-  LoadBufferEntry *entries_[LOAD_STORE_BUFFER_SIZE];
+  CircularQueue<LoadStoreBufferEntry> entries_[LOAD_STORE_BUFFER_SIZE];
 };
 
 }  // namespace riscv

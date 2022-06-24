@@ -1,7 +1,7 @@
 #pragma once
 
 #include "storage/instruction_queue.h"
-#include "storage/load_buffer.h"
+#include "storage/load_store_buffer.h"
 #include "storage/memory.h"
 #include "storage/registers.h"
 #include "storage/reorder_buffer.h"
@@ -39,7 +39,7 @@ class Tomasulo {
   Memory *memory_;
   ReorderBuffer *rob_;
   ReservationStation *rss_;
-  LoadBuffer *lb_;
+  LoadStoreBuffer *lsb_;
 };
 
 }  // namespace riscv

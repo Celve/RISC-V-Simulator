@@ -26,9 +26,7 @@ class RiscvIns {
   u32 GetRd();
   u32 GetImm();
 
-  bool IsFp();
-  bool IsLoad();
-  bool IsStore();
+  RiscvGeneralType GetGeneralType();
 
  private:
   RiscvGeneralType general_;
