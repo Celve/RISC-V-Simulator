@@ -1,9 +1,24 @@
 #pragma once
 
 #include "common/config.h"
-#include "storage/register.h"
 
 namespace riscv {
+
+class Register {
+ public:
+  Register();
+
+  u32 GetValue();
+  void SetValue(u32 value);
+  u32 GetReorder();
+  void SetReorder(u32 value);
+
+  bool IsBusy();
+
+ private:
+  u32 reg_;
+  u32 reorder_;
+};
 
 class Registers {
  public:
@@ -16,6 +31,8 @@ class Registers {
   u32 GetPc();
   void SetPc(u32 value);
   void IncreasePc(int value);
+
+  bool IsBusy(int index);
 
   void Next();
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "instructions/riscv_ins.h"
-#include "storage/register.h"
+#include "instruction/riscv_ins.h"
+#include "storage/registers.h"
 
 namespace riscv {
 
@@ -9,7 +9,17 @@ class ReorderBuffer {
  public:
   enum class TomasuloState { kUndefine, kIssue, kExecute, kWriteResult, kCommit };
 
-  bool InsertEntry(RiscvIns *ins);
+  bool IsBusy(int index);
+  bool IsReady(int index);
+
+  int Available();
+
+  u32 GetValue(int index);
+
+  // TODO(celve): please init everything
+  void Init(int index);
+  void SetIns(int index, RiscvIns *ins);
+  void MakeBusy(int index);
 
  protected:
   class ReorderBufferEntry {
@@ -19,7 +29,8 @@ class ReorderBuffer {
 
    private:
     bool busy_;
-    RiscvIns *ins_;
+    RiscvIns *ins_;  // used in the commit state
+    u32 value_;      // the result of instruction
     TomasuloState state_;
   };
 

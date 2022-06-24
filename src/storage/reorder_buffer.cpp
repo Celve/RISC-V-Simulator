@@ -1,5 +1,7 @@
 #include "storage/reorder_buffer.h"
 
+#include "instruction/riscv_ins.h"
+
 namespace riscv {
 
 ReorderBuffer::ReorderBufferEntry::ReorderBufferEntry() {
@@ -8,16 +10,8 @@ ReorderBuffer::ReorderBufferEntry::ReorderBufferEntry() {
   state_ = TomasuloState::kUndefine;
 }
 
-bool ReorderBuffer::InsertEntry(RiscvIns *ins) {
-  for (auto &entry : entries_) {
-    if (!entry.busy_) {
-      entry.busy_ = true;
-      entry.ins_ = ins;
-      entry.state_ = TomasuloState::kIssue;
-      return true;
-    }
-  }
-  return false;
+void ReorderBuffer::SetIns(int index, RiscvIns *ins) {
+  // TODO(celve): please at the same time set the status
 }
 
 }  // namespace riscv

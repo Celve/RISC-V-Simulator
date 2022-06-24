@@ -4,24 +4,17 @@
 
 #include "common/config.h"
 #include "common/utils.h"
-#include "instructions/parser.h"
-#include "instructions/riscv_ins.h"
+#include "instruction/riscv_ins.h"
 #include "storage/memory.h"
 #include "storage/registers.h"
+#include "storage/tomasulo.h"
 
 char hexs[MAX_CHARS_PER_LINE];
-riscv::Memory *memory;
-riscv::Registers *regs;
+riscv::Storage *storage;
 
-void SetUp() {
-  memory = new riscv::Memory;
-  regs = new riscv::Registers;
-}
+void SetUp() { storage = new riscv::Storage; }
 
-void TearDown() {
-  delete memory;
-  delete regs;
-}
+void TearDown() { delete storage; }
 
 void Input() {
   int hex_cursor;
@@ -37,7 +30,7 @@ void Input() {
       for (int i = 0; i < n; i += 3) {
         riscv::u32 hex;
         sscanf(hexs, "%x", &hex);
-        memory->SetByte(hex_cursor++, hex);
+        storage->GetMemory()->SetByte(hex_cursor++, hex);
         // the sentence can be used for debug
         // printf("put %x in %d\n", hex, hex_cursor);
       }
@@ -48,16 +41,16 @@ void Input() {
 void Execute() {
   while (true) {
     // fetch instruction
-    auto pc = regs->GetPc();
+    auto pc = storage->GetRegs()->GetPc();
 
-    auto ins_hex = memory->GetWord(pc);
+    auto ins_hex = storage->GetMemory()->GetWord(pc);
     if (ins_hex == 0xFF00513) {
-      printf("%u\n", regs->GetReg(10) & 0xFFU);
+      printf("%u\n", storage->GetRegs()->GetReg(10) & 0xFFU);
       break;
     }
 
     // decode
-    riscv::RiscvIns *ins = riscv::GenerateIns(ins_hex, memory, regs);
+    riscv::RiscvIns *ins = riscv::GenerateIns(ins_hex, storage);
 
     // execute
     ins->Execute();
