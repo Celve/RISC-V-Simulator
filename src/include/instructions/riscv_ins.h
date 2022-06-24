@@ -4,9 +4,9 @@
 
 namespace riscv {
 
-class RISCVIns {
+class RiscvIns {
  public:
-  virtual ~RISCVIns() = default;
+  virtual ~RiscvIns() = default;
 
   virtual void Init(u32 ins) = 0;
   virtual void Execute() = 0;

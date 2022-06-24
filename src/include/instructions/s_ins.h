@@ -11,11 +11,11 @@ namespace riscv {
  * @brief
  * 3 s-type instrction
  */
-class STypeIns : public RISCVIns {
+class SIns : public RiscvIns {
  public:
-  enum class SIns { SB, SH, SW };
+  enum class SInsType { SB, SH, SW };
 
-  explicit STypeIns(u32 ins, Memory *memory, Registers *regs) : memory_(memory), regs_(regs) {
+  explicit SIns(u32 ins, Memory *memory, Registers *regs) : memory_(memory), regs_(regs) {
     Init(ins);
   }
   void Init(u32 ins) override;
@@ -29,7 +29,7 @@ class STypeIns : public RISCVIns {
   void IdentifyOp(u32 ins);
   void CalcImm(u32 ins);
 
-  SIns ins_;
+  SInsType ins_;
   u32 rs1_;
   u32 rs2_;
   u32 imm_;

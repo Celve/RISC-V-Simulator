@@ -1,15 +1,13 @@
+#include <cstdio>
+#include <cstring>
+#include <iostream>
+
 #include "common/config.h"
 #include "common/utils.h"
 #include "instructions/parser.h"
 #include "instructions/riscv_ins.h"
 #include "storage/memory.h"
 #include "storage/registers.h"
-
-#include <cstdio>
-#include <cstring>
-#include <iostream>
-
-using namespace std;
 
 char hexs[MAX_CHARS_PER_LINE];
 riscv::Memory *memory;
@@ -59,7 +57,7 @@ void Execute() {
     }
 
     // decode
-    riscv::RISCVIns *ins = riscv::GenerateIns(ins_hex, memory, regs);
+    riscv::RiscvIns *ins = riscv::GenerateIns(ins_hex, memory, regs);
 
     // execute
     ins->Execute();
@@ -68,6 +66,8 @@ void Execute() {
 
     // tear down
     delete ins;
+
+    regs->Next();
   }
 }
 

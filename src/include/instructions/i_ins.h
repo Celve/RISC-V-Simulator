@@ -8,9 +8,9 @@
 
 namespace riscv {
 
-class ITypeIns : public RISCVIns {
+class IIns : public RiscvIns {
  public:
-  enum class IIns {
+  enum class IInsType {
     JALR,
     LB,
     LH,
@@ -28,7 +28,7 @@ class ITypeIns : public RISCVIns {
     SRAI
   };
 
-  explicit ITypeIns(u32 ins, Memory *memory, Registers *regs) : memory_(memory), regs_(regs) {
+  explicit IIns(u32 ins, Memory *memory, Registers *regs) : memory_(memory), regs_(regs) {
     Init(ins);
   }
   void Init(u32 ins) override;
@@ -41,7 +41,7 @@ class ITypeIns : public RISCVIns {
  private:
   void IdentifyOp(u32 part1, u32 part2, u32 part3, u32 shamt);
 
-  IIns ins_;
+  IInsType ins_;
   u32 rs1_;
   u32 imm_;
   u32 rd_;

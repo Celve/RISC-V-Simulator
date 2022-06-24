@@ -1,4 +1,4 @@
-#include "instructions/utype_ins.h"
+#include "instructions/u_ins.h"
 
 #include <iostream>
 
@@ -6,29 +6,29 @@
 
 namespace riscv {
 
-void UTypeIns::Init(u32 ins) {
+void UIns::Init(u32 ins) {
   imm_ = Get31To12(ins) << 12;
   rd_ = Get11To7(ins);
   u32 part1 = Get6To0(ins);
   IdentifyOp(part1);
 }
 
-void UTypeIns::IdentifyOp(u32 part1) {
+void UIns::IdentifyOp(u32 part1) {
   if (part1 == 55) {
-    ins_ = UIns::LUI;
+    ins_ = UInsType::LUI;
   } else if (part1 == 23) {
-    ins_ = UIns::AUIPC;
+    ins_ = UInsType::AUIPC;
   } else {
     // TODO(celve): add throw
   }
 }
 
-void UTypeIns::Execute() {
+void UIns::Execute() {
   switch (ins_) {
-    case UIns::LUI:
+    case UInsType::LUI:
       regs_->SetReg(rd_, imm_);
       break;
-    case UIns::AUIPC:
+    case UInsType::AUIPC:
       regs_->SetReg(rd_, regs_->GetPc() + imm_);
       break;
   }

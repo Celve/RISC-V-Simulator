@@ -1,4 +1,4 @@
-#include "instructions/rtype_ins.h"
+#include "instructions/r_ins.h"
 
 #include "common/config.h"
 #include "common/utils.h"
@@ -6,7 +6,7 @@
 
 namespace riscv {
 
-void RTypeIns::Init(u32 ins) {
+void RIns::Init(u32 ins) {
   u32 part1 = Get31To25(ins);
   rs2_ = Get24To20(ins);
   rs1_ = Get19To15(ins);
@@ -16,65 +16,65 @@ void RTypeIns::Init(u32 ins) {
   IdentifyOp(part1, part2);
 }
 
-void RTypeIns::IdentifyOp(u32 part1, u32 part2) {
+void RIns::IdentifyOp(u32 part1, u32 part2) {
   if (part1 == 0 && part2 == 0) {
-    ins_ = RIns::ADD;
+    ins_ = RInsType::ADD;
   } else if (part1 == 32 && part2 == 0) {
-    ins_ = RIns::SUB;
+    ins_ = RInsType::SUB;
   } else if (part1 == 0 && part2 == 1) {
-    ins_ = RIns::SLL;
+    ins_ = RInsType::SLL;
   } else if (part1 == 0 && part2 == 2) {
-    ins_ = RIns::SLT;
+    ins_ = RInsType::SLT;
   } else if (part1 == 0 && part2 == 3) {
-    ins_ = RIns::SLTU;
+    ins_ = RInsType::SLTU;
   } else if (part1 == 0 && part2 == 4) {
-    ins_ = RIns::XOR;
+    ins_ = RInsType::XOR;
   } else if (part1 == 0 && part2 == 5) {
-    ins_ = RIns::SRL;
+    ins_ = RInsType::SRL;
   } else if (part1 == 32 && part2 == 5) {
-    ins_ = RIns::SRA;
+    ins_ = RInsType::SRA;
   } else if (part1 == 0 && part2 == 6) {
-    ins_ = RIns::OR;
+    ins_ = RInsType::OR;
   } else if (part1 == 0 && part2 == 7) {
-    ins_ = RIns::AND;
+    ins_ = RInsType::AND;
   } else {
     // TODO(celve): resolve a error to be put in here
   }
 }
 
-void RTypeIns::Execute() {
+void RIns::Execute() {
   u32 reg1 = regs_->GetReg(rs1_);
   u32 reg2 = regs_->GetReg(rs2_);
   switch (ins_) {
-    case RIns::ADD:
+    case RInsType::ADD:
       regs_->SetReg(rd_, reg1 + reg2);
       break;
-    case RIns::SUB:
+    case RInsType::SUB:
       regs_->SetReg(rd_, reg1 - reg2);
       break;
-    case RIns::SLL:
+    case RInsType::SLL:
       regs_->SetReg(rd_, reg1 << (reg2 & 0x1F));
       break;
-    case RIns::SLT:
+    case RInsType::SLT:
       // TODO(celve): I'm not sure here
       regs_->SetReg(rd_, u32(int(reg1) < int(reg2)));
       break;
-    case RIns::SLTU:
+    case RInsType::SLTU:
       regs_->SetReg(rd_, u32(reg1 < reg2));
       break;
-    case RIns::XOR:
+    case RInsType::XOR:
       regs_->SetReg(rd_, reg1 ^ reg2);
       break;
-    case RIns::SRL:
+    case RInsType::SRL:
       regs_->SetReg(rd_, reg1 >> (reg2 & 0x1F));
       break;
-    case RIns::SRA:
+    case RInsType::SRA:
       regs_->SetReg(rd_, (int(reg1)) >> (reg2 & 0x1F));
       break;
-    case RIns::OR:
+    case RInsType::OR:
       regs_->SetReg(rd_, reg1 | reg2);
       break;
-    case RIns::AND:
+    case RInsType::AND:
       regs_->SetReg(rd_, reg1 & reg2);
       break;
   }

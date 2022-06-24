@@ -1,12 +1,13 @@
 #pragma once
 
 #include "common/config.h"
+#include "storage/register.h"
 
 namespace riscv {
 
 class Registers {
  public:
-  Registers();
+  Registers() = default;
 
   u32 GetReg(int index);
   void SetReg(int index, u32 value);
@@ -16,10 +17,13 @@ class Registers {
   void SetPc(u32 value);
   void IncreasePc(int value);
 
+  void Next();
+
  private:
-  u32 pc_;
-  u32 regs_[REGISTER_NUMBER];
-  u32 reorder_[REGISTER_NUMBER];
+  Register pc_org_;
+  Register pc_upd_;
+  Register regs_org_[REGISTER_NUMBER];
+  Register regs_upd_[REGISTER_NUMBER];
 };
 
 }  // namespace riscv

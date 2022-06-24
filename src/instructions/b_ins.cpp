@@ -1,4 +1,4 @@
-#include "instructions/btype_ins.h"
+#include "instructions/b_ins.h"
 
 #include <algorithm>
 #include <iostream>
@@ -7,7 +7,7 @@
 
 namespace riscv {
 
-void BTypeIns::Init(u32 ins) {
+void BIns::Init(u32 ins) {
   rs2_ = Get24To20(ins);
   rs1_ = Get19To15(ins);
   u32 part1 = Get14To12(ins);
@@ -15,71 +15,71 @@ void BTypeIns::Init(u32 ins) {
   IdentifyOp(part1);
 }
 
-void BTypeIns::IdentifyOp(u32 part1) {
+void BIns::IdentifyOp(u32 part1) {
   if (part1 == 0) {
-    ins_ = BIns::BEQ;
+    ins_ = BInsType::BEQ;
   } else if (part1 == 1) {
-    ins_ = BIns::BNE;
+    ins_ = BInsType::BNE;
   } else if (part1 == 4) {
-    ins_ = BIns::BLT;
+    ins_ = BInsType::BLT;
   } else if (part1 == 5) {
-    ins_ = BIns::BGE;
+    ins_ = BInsType::BGE;
   } else if (part1 == 6) {
-    ins_ = BIns::BLTU;
+    ins_ = BInsType::BLTU;
   } else if (part1 == 7) {
-    ins_ = BIns::BGEU;
+    ins_ = BInsType::BGEU;
   } else {
     // TODO(celve): add throw here
   }
 }
 
-void BTypeIns::CalcImm(u32 ins) {
+void BIns::CalcImm(u32 ins) {
   imm_ = ((ins >> 31 & 0x1) << 12) | ((ins >> 25 & 0x3F) << 5) | ((ins >> 8 & 0xF) << 1) |
          ((ins >> 7 & 0x1) << 11);
 }
 
-void BTypeIns::Execute() {
+void BIns::Execute() {
   int reg1 = regs_->GetReg(rs1_);
   int reg2 = regs_->GetReg(rs2_);
   int imm = Extend12(imm_);
-  auto pc = regs_->GetPc();
+  u32 pc = regs_->GetPc();
   switch (ins_) {
-    case BIns::BEQ:
+    case BInsType::BEQ:
       if (reg1 == reg2) {
         regs_->SetPc(pc + imm);
       } else {
         regs_->IncreasePc(4);
       }
       break;
-    case BIns::BNE:
+    case BInsType::BNE:
       if (reg1 != reg2) {
         regs_->SetPc(pc + imm);
       } else {
         regs_->IncreasePc(4);
       }
       break;
-    case BIns::BLT:
+    case BInsType::BLT:
       if (reg1 < reg2) {
         regs_->SetPc(pc + imm);
       } else {
         regs_->IncreasePc(4);
       }
       break;
-    case BIns::BGE:
+    case BInsType::BGE:
       if (reg1 >= reg2) {
         regs_->SetPc(pc + imm);
       } else {
         regs_->IncreasePc(4);
       }
       break;
-    case BIns::BLTU:
+    case BInsType::BLTU:
       if (u32(reg1) < u32(reg2)) {
         regs_->SetPc(pc + imm);
       } else {
         regs_->IncreasePc(4);
       }
       break;
-    case BIns::BGEU:
+    case BInsType::BGEU:
       if (u32(reg1) >= u32(reg2)) {
         regs_->SetPc(pc + imm);
       } else {
