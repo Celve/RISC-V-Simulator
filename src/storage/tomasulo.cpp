@@ -24,6 +24,7 @@ bool Tomasulo::Fetch() {
     return false;
   }
   // TODO(celve): find a way to return
+  // TODO(celve): add branch prediction here, which costs none, for simplicity
   auto pc = regs_->GetPc();
   auto hexs = memory_->GetWord(pc);
   iq_->Push(hexs);
