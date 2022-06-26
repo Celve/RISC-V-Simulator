@@ -3,7 +3,7 @@
 
 namespace riscv {
 
-class ALU {
+class ArithmeticLogicUnit {
  public:
   u32 Execute(RiscvInsType type, u32 lhs, u32 rhs);
 };

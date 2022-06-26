@@ -13,7 +13,6 @@ class ReservationStationEntry {
   void SetQj(u32 value);
   void SetQk(u32 value);
   void SetDest(u32 value);
-  void SetA(u32 value);
   void MakeBusy();
 
  private:
@@ -24,7 +23,6 @@ class ReservationStationEntry {
   u32 qj_;
   u32 qk_;
   u32 dest_;
-  u32 a_;
 };
 
 class ReservationStation {
@@ -35,12 +33,27 @@ class ReservationStation {
   void SetQj(int index, u32 value);
   void SetQk(int index, u32 value);
   void SetDest(int index, u32 value);
-  void SetA(int index, u32 value);
+  void SetIns(int index, RiscvIns *ins);
+  u32 GetVj(int index);
+  u32 GetVk(int index);
+  u32 GetQj(int index);
+  u32 GetQk(int index);
+  RiscvIns *GetIns(int index);
+
   void MakeBusy(int index);
   void Init(int index);
 
+  bool IsFull();
+  int FindReady();
+
+  int GetFront();
+  void GetNext(int &index);
+
+  void Pop(int index);
+
  private:
   ReservationStationEntry entries_[RESERVATION_STATION_SIZE];
+  u32 size_;
 };
 
 }  // namespace riscv

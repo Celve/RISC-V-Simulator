@@ -5,7 +5,7 @@
 
 namespace riscv {
 
-u32 ALU::Execute(RiscvInsType type, u32 lhs, u32 rhs) {
+u32 ArithmeticLogicUnit::Execute(RiscvInsType type, u32 lhs, u32 rhs) {
   switch (type) {
     case RiscvInsType::BEQ:
       return u32(int(lhs) == int(rhs));
@@ -65,6 +65,16 @@ u32 ALU::Execute(RiscvInsType type, u32 lhs, u32 rhs) {
       return lhs | rhs;
     case RiscvInsType::AND:
       return lhs & rhs;
+    case RiscvInsType::SB:
+    case RiscvInsType::SH:
+    case RiscvInsType::SW:
+      return lhs + rhs;
+    case RiscvInsType::LB:
+    case RiscvInsType::LBU:
+    case RiscvInsType::LH:
+    case RiscvInsType::LHU:
+    case RiscvInsType::LW:
+      return lhs + rhs;
     default:
       return 0U;
   }

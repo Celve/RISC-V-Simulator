@@ -27,6 +27,7 @@ class RiscvIns {
   u32 GetImm();
 
   RiscvGeneralType GetGeneralType();
+  RiscvInsType GetInsType();
 
  private:
   RiscvGeneralType general_;

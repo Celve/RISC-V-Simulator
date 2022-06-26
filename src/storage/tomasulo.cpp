@@ -2,33 +2,46 @@
 
 #include "instruction/riscv_general_type.h"
 #include "instruction/riscv_ins.h"
+#include "instruction/riscv_ins_type.h"
 #include "storage/reservation_station.h"
 
 namespace riscv {
-
-Tomasulo::Tomasulo() {
-  regs_ = new Registers;
-  memory_ = new Memory;
-}
-
-Tomasulo::~Tomasulo() {
-  delete regs_;
-  delete memory_;
-}
 
 /******************************************************************************
  * FETCH
  ******************************************************************************/
 bool Tomasulo::Fetch() {
+  if (iq_->IsStalled() && iq_->GetQ() != INVALID_ENTRY) {
+    return false;
+  }
   if (iq_->IsFull()) {
     return false;
   }
-  // TODO(celve): find a way to return
-  // TODO(celve): add branch prediction here, which costs none, for simplicity
+
   auto pc = regs_->GetPc();
   auto hexs = memory_->GetWord(pc);
-  iq_->Push(hexs);
-  regs_->IncreasePc(4);
+  auto ins = RiscvIns(hexs);
+  auto supposed_pc = regs_->GetPc() + 4;  // completed immediately
+
+  /* the instruction jalr would stall the fetching process */
+  if (ins.GetInsType() == RiscvInsType::JALR && !iq_->IsStalled()) {
+    iq_->MakeStalled();
+    iq_->SetQ(ins.GetRs());
+    return false;
+  }
+
+  /* compute the destination in one cycle */
+  if (ins.GetInsType() == RiscvInsType::JALR) {
+    supposed_pc = (iq_->GetV() + int(ins.GetImm())) & (~1);
+  } else if (ins.GetGeneralType() == RiscvGeneralType::BType) {
+    if (bp_->Predict(pc)) {
+      supposed_pc = regs_->GetPc() + ins.GetImm();
+    }
+  } else if (ins.GetGeneralType() == RiscvGeneralType::JType) {
+    supposed_pc = regs_->GetPc() + ins.GetImm();
+  }
+  iq_->Push(hexs, pc, supposed_pc);
+  regs_->SetPc(supposed_pc);
   return true;
 }
 
@@ -39,57 +52,78 @@ bool Tomasulo::Issue() {
   if (iq_->IsEmpty()) {
     return false;
   }
-  auto hexs = iq_->Front();
-  iq_->Pop();
-  RiscvIns *ins = new RiscvIns(hexs);
 
-  if (ins->GetGeneralType() != RiscvGeneralType::LType && ins->GetGeneralType() != RiscvGeneralType::SType) {
+  auto iq_front = iq_->Front();
+  iq_->Pop();
+  auto hex = iq_front.GetHex();
+  auto pc = iq_front.GetPc();
+  auto supposed_pc = iq_front.GetSupposedPc();
+
+  RiscvIns *ins = new RiscvIns(hex);
+  if (ins->GetGeneralType() == RiscvGeneralType::UType) {
+    if (rob_->IsFull()) {
+      return false;
+    }
+    int rob_index = rob_->Push();
+    rob_->Init(rob_index);
+    rob_->SetIns(rob_index, ins);
+    rob_->SetValue(rob_index, int(ins->GetImm()) + (ins->GetInsType() == RiscvInsType::LUI ? 0U : pc));
+    rob_->SetSupposedPc(rob_index, supposed_pc);
+    regs_->SetReorder(ins->GetRd(), rob_index);
+  } else if (ins->GetGeneralType() == RiscvGeneralType::JType) {
+    // TODO(celve): I even don't need to put it into ROB?
+  } else if (ins->GetGeneralType() == RiscvGeneralType::RType || ins->GetGeneralType() == RiscvGeneralType::IType ||
+             ins->GetGeneralType() == RiscvGeneralType::BType) {
     /* find avaiable RS and ROB */
-    int rss_index = rss_->Available();
-    int rob_index = rob_->Available();
-    if (rss_index == INVALID_ENTRY || rss_index == INVALID_ENTRY) {
+    if (rss_->IsFull() || rob_->IsFull()) {
       return false;
     }
 
     /* for all instructions */
+    int rss_index = rss_->Available();
+    int rob_index = rob_->Push();
     rss_->Init(rss_index);
     rob_->Init(rob_index);
-    FetchRs(ins->GetRs(), rss_index);
+    // TODO(celve): I haven't use the busy value
     rss_->MakeBusy(rss_index);
     rss_->SetDest(rss_index, rob_index);
     rob_->SetIns(rob_index, ins);
+    rob_->SetSupposedPc(rob_index, supposed_pc);
 
-    /* for FP operations and store */
     if (ins->GetGeneralType() == RiscvGeneralType::BType) {
-      FetchRt(ins->GetRt(), rss_index);
+      FetchRs(ins->GetRs(), rss_, rss_index);
+      FetchRt(ins->GetRt(), rss_, rss_index);
     } else if (ins->GetGeneralType() == RiscvGeneralType::IType) {
+      FetchRs(ins->GetRs(), rss_, rss_index);
+      rss_->SetVk(rss_index, ins->GetImm());
       regs_->SetReorder(ins->GetRd(), rob_index);
-    } else if (ins->GetGeneralType() == RiscvGeneralType::JType) {
-      // TODO(celve): consider whether to do computation inside alu
     } else if (ins->GetGeneralType() == RiscvGeneralType::RType) {
-      FetchRt(ins->GetRt(), rss_index);
+      FetchRs(ins->GetRs(), rss_, rss_index);
+      FetchRt(ins->GetRt(), rss_, rss_index);
       regs_->SetReorder(ins->GetRd(), rob_index);
-    } else if (ins->GetGeneralType() == RiscvGeneralType::UType) {
-      // TODO(celve): consider whether to do computation inside alu
     }
   } else {
-    int lsb_index = lsb_->Available();
-    int rob_index = rob_->Available();
+    int lsb_index = lsb_->Push();
+    int rob_index = rob_->Push();
     lsb_->Init(lsb_index);
     rob_->Init(rob_index);
-    FetchRs(ins->GetRs(), lsb_index);
+    FetchRs(ins->GetRs(), lsb_, lsb_index);
+    // TODO(celve): I haven't use the busy value
     lsb_->MakeBusy(lsb_index);
     lsb_->SetDest(lsb_index, rob_index);
     rob_->SetIns(rob_index, ins);
+    rob_->SetSupposedPc(rob_index, supposed_pc);
 
     /* for store */
     if (ins->GetGeneralType() == RiscvGeneralType::SType) {
-      FetchRt(ins->GetRt(), lsb_index);
+      FetchRs(ins->GetRs(), lsb_, lsb_index);
+      FetchRt(ins->GetRt(), lsb_, lsb_index);
       lsb_->SetA(lsb_index, ins->GetImm());
     }
 
     /* for load */
     if (ins->GetGeneralType() == RiscvGeneralType::LType) {
+      FetchRs(ins->GetRs(), lsb_, lsb_index);
       lsb_->SetA(lsb_index, ins->GetImm());
       regs_->SetReorder(ins->GetRd(), rob_index);
     }
@@ -97,45 +131,159 @@ bool Tomasulo::Issue() {
   return true;
 }
 
-void Tomasulo::FetchRs(u32 rs, int rss_index) {
+template <class Buffer>
+void Tomasulo::FetchRs(u32 rs, Buffer *buffer, int index) {
   if (rs == INVALID_REGISTER) {
     return;
   }
   if (regs_->IsBusy(rs)) {
     auto h = regs_->GetReorder(rs);
     if (rob_->IsReady(h)) {
-      rss_->SetVj(rss_index, rob_->GetValue(h));
-      rss_->SetQj(rss_index, 0);
+      buffer->SetVj(index, rob_->GetValue(h));
+      buffer->SetQj(index, 0);
     } else {
-      rss_->SetQj(rss_index, h);
+      buffer->SetQj(index, h);
     }
   } else {
-    rss_->SetVj(rss_index, regs_->GetReg(rs));
+    buffer->SetVj(index, regs_->GetReg(rs));
   }
 }
 
-void Tomasulo::FetchRt(u32 rt, int rss_index) {
+template <class Buffer>
+void Tomasulo::FetchRt(u32 rt, Buffer *buffer, int index) {
   if (rt == INVALID_REGISTER) {
     return;
   }
   if (regs_->IsBusy(rt)) {
     auto h = regs_->GetReorder(rt);
     if (rob_->IsReady(h)) {
-      rss_->SetVk(rss_index, rob_->GetValue(h));
-      rss_->SetQk(rss_index, 0);
+      buffer->SetVk(index, rob_->GetValue(h));
+      buffer->SetQk(index, 0);
     } else {
-      rss_->SetQk(rss_index, h);
+      buffer->SetQk(index, h);
     }
   } else {
-    rss_->SetVk(rss_index, regs_->GetReg(rt));
+    buffer->SetVk(index, regs_->GetReg(rt));
   }
 }
 
 /******************************************************************************
  * Execute
  ******************************************************************************/
-void Tomasulo::Execute() {}
+bool Tomasulo::Execute() {
+  int rss_index = rss_->FindReady();
+  if (rss_index == INVALID_ENTRY) {
+    return false;
+  }
+  cdb_->Push(rss_->GetIns(rss_index)->GetRd(), general_calc_->Execute(rss_->GetIns(rss_index)->GetInsType(),
+                                                                      rss_->GetVj(rss_index), rss_->GetVk(rss_index)));
+  rss_->Pop(rss_index);
+  return true;
+}
 
-void Tomasulo::LoadAndStore() {}
+bool Tomasulo::LoadAndStore() {
+  if (lsb_->IsEmpty()) {
+    return false;
+  }
+  int lsb_index = lsb_->GetFront();
+  if (!lsb_->IsReady(lsb_index)) {
+    return false;
+  }
+
+  auto *ins = lsb_->GetIns(lsb_index);
+  if (ins->GetGeneralType() == RiscvGeneralType::LType) {
+    lsb_->IncreaseCount(lsb_index);
+    if (lsb_->IsCompleted(lsb_index)) {
+      auto result = lsb_->GetVk(lsb_index);
+      cdb_->Push(lsb_->GetDest(lsb_index), result);
+      lsb_->Pop();
+    }
+  } else {
+    lsb_->IncreaseCount(lsb_index);
+    if (lsb_->IsCompleted(lsb_index)) {
+      lsb_->Pop();
+    }
+  }
+  return true;
+}
+
+bool Tomasulo::CalculateAddress() {
+  if (lsb_->IsEmpty()) {
+    return false;
+  }
+  int lsb_index = lsb_->GetFront();
+  while (lsb_index != INVALID_ENTRY) {
+    if (lsb_->GetQj(lsb_index) == INVALID_ENTRY) {
+      auto address =
+          address_calc_->Execute(lsb_->GetIns(lsb_index)->GetInsType(), lsb_->GetA(lsb_index), lsb_->GetVj(lsb_index));
+      lsb_->SetA(lsb_index, address);
+      return true;
+    }
+    lsb_->GetNext(lsb_index);
+  }
+  return false;
+}
+
+/******************************************************************************
+ * Write Result
+ ******************************************************************************/
+bool Tomasulo::WriteResult() {
+  if (cdb_->IsEmpty()) {
+    return false;
+  }
+  auto cdb_front = cdb_->Front();
+  u32 dest = cdb_front.GetDest();
+  u32 value = cdb_front.GetValue();
+  cdb_->Pop();
+
+  /* for instruction queue */
+  if (iq_->GetQ() == dest) {
+    iq_->SetQ(INVALID_ENTRY);
+    iq_->SetV(value);
+  }
+
+  /* for load and store buffer */
+  TraverseToSet(dest, value, lsb_);
+  /* for reorder buffer */
+  rob_->SetValue(dest, value);
+  /* for reservation stations */
+  TraverseToSet(dest, value, rss_);
+
+  return true;
+}
+
+template <class Buffer>
+void Tomasulo::TraverseToSet(u32 dest, u32 value, Buffer *buffer) {
+  auto index = buffer->GetFront();
+  while (index != INVALID_ENTRY) {
+    if (buffer->GetQj(index) == dest) {
+      buffer->SetQj(index, INVALID_ENTRY);
+      buffer->SetVj(index, value);
+    }
+    if (buffer->GetQk(index) == dest) {
+      buffer->SetQk(index, INVALID_ENTRY);
+      buffer->SetVk(index, value);
+    }
+    buffer->GetNext(index);
+  }
+}
+
+/******************************************************************************
+ * Commit
+ ******************************************************************************/
+bool Tomasulo::Commit() {
+  int rob_index = rob_->GetFront();
+  // TODO(celve): honestly, I haven't change the state in the previous stage
+  if (rob_index == INVALID_ENTRY || rob_->GetState(rob_index) != TomasuloState::kCommit) {
+    return false;
+  }
+  u32 dest = rob_->GetIns(rob_index)->GetRd();
+  u32 value = rob_->GetValue(rob_index);
+  regs_->SetReg(dest, value);
+  regs_->SetReorder(dest, INVALID_REORDER);
+  // TODO(celve): add speculation, which might clear all the states
+  // TODO(celve): add judgement for appending load and store buffer
+  return true;
+}
 
 }  // namespace riscv

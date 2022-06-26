@@ -19,34 +19,34 @@ void Register::SetReorder(u32 value) { reorder_ = value; }
 
 bool Register::IsBusy() { return reorder_ != INVALID_REORDER; }
 
-u32 Registers::GetReg(int index) { return regs_org_[index].GetValue(); }
+u32 Registers::GetReg(int index) { return regs_read_[index].GetValue(); }
 
 void Registers::SetReg(int index, u32 value) {
   if (index != 0) {
-    regs_upd_[index].SetValue(value);
+    regs_write_[index].SetValue(value);
   }
 }
 
-u32 Registers::GetReorder(int index) { return regs_org_[index].GetReorder(); }
+u32 Registers::GetReorder(int index) { return regs_read_[index].GetReorder(); }
 
-void Registers::SetReorder(int index, u32 value) { regs_upd_[index].SetReorder(value); }
+void Registers::SetReorder(int index, u32 value) { regs_write_[index].SetReorder(value); }
 
-u32 Registers::GetPc() { return pc_org_.GetValue(); }
+u32 Registers::GetPc() { return pc_read_.GetValue(); }
 
-void Registers::SetPc(u32 value) { pc_upd_.SetValue(value); }
+void Registers::SetPc(u32 value) { pc_write_.SetValue(value); }
 
 /**
  * @brief
  * the value is relative to the in pc, increase twice make the first invalid
  * @param value
  */
-void Registers::IncreasePc(int value) { pc_upd_.SetValue(pc_org_.GetValue() + value); }
+void Registers::IncreasePc(int value) { pc_write_.SetValue(pc_read_.GetValue() + value); }
 
-bool Registers::IsBusy(int index) { return regs_org_[index].IsBusy(); }
+bool Registers::IsBusy(int index) { return regs_read_[index].IsBusy(); }
 
 void Registers::Next() {
-  memcpy(regs_org_, regs_upd_, sizeof(regs_org_));
-  pc_org_ = pc_upd_;
+  memcpy(regs_read_, regs_write_, sizeof(regs_read_));
+  pc_read_ = pc_write_;
 }
 
 }  // namespace riscv

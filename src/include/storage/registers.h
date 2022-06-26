@@ -37,10 +37,10 @@ class Registers {
   void Next();
 
  private:
-  Register pc_org_;
-  Register pc_upd_;
-  Register regs_org_[REGISTER_NUMBER];
-  Register regs_upd_[REGISTER_NUMBER];
+  Register pc_read_;
+  Register pc_write_;
+  Register regs_read_[REGISTER_NUMBER];
+  Register regs_write_[REGISTER_NUMBER];
 };
 
 }  // namespace riscv

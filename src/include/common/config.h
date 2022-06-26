@@ -28,6 +28,9 @@ using u8 = uint8_t;
 #define INVALID_REORDER 0xFFFFFFFFU    // the invalid reorder number
 #define INVALID_REGISTER 0xFFFFFFFFU   // the invalid register number
 #define INVALID_ENTRY (-1)             // the invalid entry number
-#define INVALID_IMMEDIATE 0xFFFFFFFFU  // the invalid entry number
+#define INVALID_IMMEDIATE 0xFFFFFFFFU  // the invalid immediate number
+#define INVALID_ADDRESS 0xFFFFFFFFU    // the invalid address number
+
+enum class TomasuloState { kUndefine, kIssue, kExecute, kWriteResult, kCommit };
 
 }  // namespace riscv
