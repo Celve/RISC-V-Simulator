@@ -32,6 +32,4 @@ using u8 = uint8_t;
 #define INVALID_IMMEDIATE 0xFFFFFFFFU  // the invalid immediate number
 #define INVALID_ADDRESS 0xFFFFFFFFU    // the invalid address number
 
-enum class TomasuloState { kUndefine, kIssue, kExecute, kWriteResult, kCommit };
-
 }  // namespace riscv

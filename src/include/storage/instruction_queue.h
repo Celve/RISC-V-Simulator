@@ -10,7 +10,8 @@ namespace riscv {
 
 class InstructionQueueNode {
  public:
-  InstructionQueueNode(u32 ins_hex, u32 pc, u32 supposed_pc) : ins_hex_(ins_hex), pc_(pc), supposed_pc_(supposed_pc) {}
+  explicit InstructionQueueNode(u32 ins_hex = 0, u32 pc = 0, u32 supposed_pc = 0)
+      : ins_hex_(ins_hex), pc_(pc), supposed_pc_(supposed_pc) {}
 
   u32 GetHex() const { return ins_hex_; }
   u32 GetPc() const { return pc_; }

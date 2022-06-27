@@ -69,7 +69,7 @@ void Registers::Print() {
     }
     printf("\n");
   };
-  printf("Registers\n");
+  printf("Registers😉:\n");
   print_row(0, 8);
   print_row(8, 16);
   print_row(16, 24);

@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "instruction/riscv_ins_type.h"
+
 namespace riscv {
 
 bool InstructionQueue::Push(u32 ins_hex, u32 pc, u32 supposed_pc) {
@@ -51,14 +53,13 @@ void InstructionQueue::Reset() {
 
 void InstructionQueue::Print() {
   int index = queue_read_.FrontIndex();
-  std::cout << "InstructionQueue: " << std::endl;
+  std::cout << "InstructionQueue😉: " << std::endl;
   std::cout << "type\trs\trt\trd\timm\n";
   while (index != INVALID_ENTRY) {
     auto hex = queue_read_[index].GetHex();
     auto ins = RiscvIns(hex);
     auto ins_type = ins.GetInsType();
-    std::cout << static_cast<std::underlying_type<RiscvInsType>::type>(ins_type) << "\t"
-              << (ins.GetRs() == INVALID_REGISTER ? -1 : ins.GetRs()) << "\t"
+    std::cout << ToString(ins_type) << "\t" << (ins.GetRs() == INVALID_REGISTER ? -1 : ins.GetRs()) << "\t"
               << (ins.GetRt() == INVALID_REGISTER ? -1 : ins.GetRt()) << "\t"
               << (ins.GetRd() == INVALID_REGISTER ? -1 : ins.GetRd()) << "\t"
               << (ins.GetImm() == INVALID_IMMEDIATE ? -1 : ins.GetImm()) << "\n";

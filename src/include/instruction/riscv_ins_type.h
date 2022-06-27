@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 namespace riscv {
 
 enum class RiscvInsType {
@@ -41,5 +42,7 @@ enum class RiscvInsType {
   LUI,
   AUIPC
 };
+
+std::string ToString(const RiscvInsType& riscv_ins_type);
 
 }  // namespace riscv

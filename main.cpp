@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <cstdio>
 #include <cstring>
 #include <iostream>
@@ -13,7 +15,7 @@
 #include "storage/registers.h"
 #include "storage/reorder_buffer.h"
 #include "storage/reservation_station.h"
-#include "storage/tomasulo.h"
+#include "tomasulo/tomasulo.h"
 #include "unit/arithmetic_logic_unit.h"
 
 char hexs[MAX_CHARS_PER_LINE];
@@ -99,6 +101,18 @@ void Execute() {
       printf("%u\n", regs->GetReg(10) & 0xFFU);
       break;
     }
+    regs->Print();
+    puts("");
+    iq->Print();
+    puts("");
+    rss->Print();
+    puts("");
+    rob->Print();
+    puts("");
+    lsb->Print();
+    puts("");
+    puts("");
+    sleep(1);
   }
 }
 

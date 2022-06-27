@@ -70,9 +70,9 @@ void ReservationStation::Reset() {
 }
 
 void ReservationStation::Print() {
-  std::cout << "Reservation Station: " << std::endl;
+  std::cout << "Reservation Station😉: " << std::endl;
   std::cout << "ins\trs\trt\n";
-  for (int i = 0; i < RESERVATION_STATION_SIZE; i++) {
+  for (int i = 0; i < RESERVATION_STATION_SIZE / 4; i++) {
     auto ins = GetIns(i);
     std::cout << static_cast<std::underlying_type<RiscvInsType>::type>(ins.GetInsType()) << "\t"
               << (GetQj(i) != INVALID_ENTRY ? GetQj(i) : GetVj(i)) << "\t"

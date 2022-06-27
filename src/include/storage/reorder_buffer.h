@@ -4,6 +4,7 @@
 #include "container/circular_queue.hpp"
 #include "instruction/riscv_ins.h"
 #include "storage/registers.h"
+#include "tomasulo/tomasulo_state.h"
 
 namespace riscv {
 

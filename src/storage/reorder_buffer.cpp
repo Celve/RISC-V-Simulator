@@ -5,6 +5,7 @@
 #include "common/config.h"
 #include "instruction/riscv_general_type.h"
 #include "instruction/riscv_ins.h"
+#include "instruction/riscv_ins_type.h"
 
 namespace riscv {
 
@@ -66,12 +67,11 @@ u32 ReorderBuffer::GetRelativeCount() {
 
 void ReorderBuffer::Print() {
   int index = entries_read_.FrontIndex();
-  std::cout << "ReorderBuffer: " << std::endl;
+  std::cout << "ReorderBuffer😉: " << std::endl;
   std::cout << "ins\tstate\n";
   while (index != INVALID_ENTRY) {
     auto ins = entries_read_[index].GetIns();
-    std::cout << static_cast<std::underlying_type<RiscvInsType>::type>(ins.GetInsType()) << "\t"
-              << static_cast<std::underlying_type<TomasuloState>::type>(entries_read_[index].GetState()) << "\n";
+    std::cout << ToString(ins.GetInsType()) << "\t" << ToString(entries_read_[index].GetState()) << "\n";
     entries_read_.Next(index);
   }
 }
