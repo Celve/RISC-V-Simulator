@@ -1,6 +1,6 @@
 #pragma once
 
-#include "prediction/branch_prediction.h"
+#include "prediction/branch_predictor.h"
 #include "storage/common_data_bus.h"
 #include "storage/instruction_queue.h"
 #include "storage/load_store_buffer.h"
@@ -16,7 +16,9 @@ class Tomasulo {
   using RS = ReservationStation;
 
  public:
-  Tomasulo() = default;
+  explicit Tomasulo(Registers *regs, Memory *memory, InstructionQueue *iq, ReorderBuffer *rob, ReservationStation *rss,
+                    LoadStoreBuffer *lsb, CommonDataBus *cdb, BranchPredictor *bp, ArithmeticLogicUnit *general_calc,
+                    ArithmeticLogicUnit *address_calc);
   ~Tomasulo() = default;
 
   Registers *GetRegs() { return regs_; }
@@ -40,16 +42,19 @@ class Tomasulo {
   void TraverseToSet(u32 dest, u32 value, Buffer *buffer);
 
   bool Commit();
+  void Reset();
+
+  void Update();
 
  private:
-  InstructionQueue *iq_;
   Registers *regs_;
   Memory *memory_;
+  InstructionQueue *iq_;
   ReorderBuffer *rob_;
   ReservationStation *rss_;
   LoadStoreBuffer *lsb_;
-  BranchPrediction *bp_;
   CommonDataBus *cdb_;
+  BranchPredictor *bp_;
 
   ArithmeticLogicUnit *general_calc_;
   ArithmeticLogicUnit *address_calc_;

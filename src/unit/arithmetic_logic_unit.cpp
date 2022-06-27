@@ -5,20 +5,20 @@
 
 namespace riscv {
 
-u32 ArithmeticLogicUnit::Execute(RiscvInsType type, u32 lhs, u32 rhs) {
+u32 ArithmeticLogicUnit::Execute(RiscvInsType type, u32 lhs, u32 rhs, u32 pc, u32 imm) {
   switch (type) {
     case RiscvInsType::BEQ:
-      return u32(int(lhs) == int(rhs));
+      return int(lhs) == int(rhs) ? pc + int(imm) : pc + 4;
     case RiscvInsType::BNE:
-      return u32(int(lhs) != int(rhs));
+      return int(lhs) != int(rhs) ? pc + int(imm) : pc + 4;
     case RiscvInsType::BLT:
-      return u32(int(lhs) < int(rhs));
+      return int(lhs) < int(rhs) ? pc + int(imm) : pc + 4;
     case RiscvInsType::BGE:
-      return u32(int(lhs) >= int(rhs));
+      return int(lhs) >= int(rhs) ? pc + int(imm) : pc + 4;
     case RiscvInsType::BLTU:
-      return u32(lhs < rhs);
+      return lhs < rhs ? pc + int(imm) : pc + 4;
     case RiscvInsType::BGEU:
-      return u32(lhs >= rhs);
+      return lhs >= rhs ? pc + int(imm) : pc + 4;
     // case RiscvInsType::JALR:
     // return (lhs + rhs) & (~1);
     case RiscvInsType::ADDI:

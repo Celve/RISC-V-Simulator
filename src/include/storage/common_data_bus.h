@@ -8,8 +8,10 @@ namespace riscv {
 
 class CommonDataBusNode {
  public:
-  u32 GetDest();
-  u32 GetValue();
+  CommonDataBusNode(u32 dest, u32 value) : dest_(dest), value_(value) {}
+
+  u32 GetDest() const { return dest_; }
+  u32 GetValue() const { return value_; }
 
  private:
   u32 dest_;
@@ -24,8 +26,12 @@ class CommonDataBus {
 
   bool IsEmpty();
 
+  void Update();
+  void Reset();
+
  private:
-  std::queue<CommonDataBusNode> queue_;
+  std::queue<CommonDataBusNode> queue_read_;
+  std::queue<CommonDataBusNode> queue_write_;
 };
 
 }  // namespace riscv

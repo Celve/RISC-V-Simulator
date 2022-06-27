@@ -10,6 +10,10 @@ namespace riscv {
 
 RiscvIns::RiscvIns(u32 ins) { Init(ins); }
 
+RiscvInsType RiscvIns::GetInsType() { return ins_; }
+
+RiscvGeneralType RiscvIns::GetGeneralType() { return general_; }
+
 void RiscvIns::Init(u32 ins) {
   u32 part1 = Get6To0(ins);
   if (part1 == 55 || part1 == 23) {

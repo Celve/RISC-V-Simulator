@@ -34,7 +34,7 @@ class Registers {
 
   bool IsBusy(int index);
 
-  void Next();
+  void Update();
 
  private:
   Register pc_read_;

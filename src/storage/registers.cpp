@@ -44,7 +44,7 @@ void Registers::IncreasePc(int value) { pc_write_.SetValue(pc_read_.GetValue() +
 
 bool Registers::IsBusy(int index) { return regs_read_[index].IsBusy(); }
 
-void Registers::Next() {
+void Registers::Update() {
   memcpy(regs_read_, regs_write_, sizeof(regs_read_));
   pc_read_ = pc_write_;
 }

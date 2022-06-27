@@ -8,6 +8,7 @@ namespace riscv {
 
 class RiscvIns {
  public:
+  RiscvIns() = default;
   explicit RiscvIns(u32 ins);
   ~RiscvIns() = default;
 

@@ -12,47 +12,60 @@ namespace riscv {
 class LoadStoreBufferEntry : public ReservationStationEntry {
  public:
   void SetA(u32 value);
-  void IncreaseCount();
+  void IncreaseCount(int delta) { count_ += delta; }
+
+  bool IsCompleted() { return count_ == 3; }
+  bool IsCalculated() { return calculated_; }
+
+  void Init();
 
  private:
-  u32 a_;
   u32 count_;        // the round of circle
   bool calculated_;  // whether the address has been calculated or not
 };
 
 class LoadStoreBuffer {
  public:
-  void SetVj(int index, u32 value);
-  void SetVk(int index, u32 value);
-  void SetQj(int index, u32 value);
-  void SetQk(int index, u32 value);
-  void SetDest(int index, u32 value);
-  void SetA(int index, u32 value);
-  u32 GetVj(int index);
-  u32 GetVk(int index);
-  u32 GetQj(int index);
-  u32 GetQk(int index);
-  u32 GetDest(int index);
-  u32 GetA(int index);
-  RiscvIns *GetIns(int index);
+  LoadStoreBuffer();
 
-  void MakeBusy(int index);
-  void Init(int index);
+  void SetVj(int index, u32 value) { entries_write_[index].SetVj(value); }
+  void SetVk(int index, u32 value) { entries_write_[index].SetVk(value); }
+  void SetQj(int index, u32 value) { entries_write_[index].SetQj(value); }
+  void SetQk(int index, u32 value) { entries_write_[index].SetQk(value); }
+  void SetDest(int index, u32 value) { entries_write_[index].SetDest(value); }
+  void SetA(int index, u32 value) { entries_write_[index].SetA(value); }
+  void MakeBusy(int index) { entries_write_[index].MakeBusy(); }
+  void IncreaseReadyCount(int delta) { ready_count_write_ += delta; }
+
+  u32 GetVj(int index) { return entries_read_[index].GetVj(); }
+  u32 GetVk(int index) { return entries_read_[index].GetVk(); }
+  u32 GetQj(int index) { return entries_read_[index].GetQj(); }
+  u32 GetQk(int index) { return entries_read_[index].GetQk(); }
+  u32 GetDest(int index) { return entries_read_[index].GetDest(); }
+  u32 GetA(int index) { return entries_read_[index].GetA(); }
+  RiscvIns GetIns(int index) { return entries_read_[index].GetIns(); }
+
+  void Init(int index) { entries_write_[index].Init(); }
 
   int Push();
-  void Pop();
+  bool Pop();
 
-  int GetFront();
-  void IncreaseCount(int index);
-  void GetNext(int &index);
+  int GetFront() { return entries_read_.Front(); }
+  void IncreaseCount(int index) { entries_write_[index].IncreaseCount(1); }
+  void GetNext(int &index) { entries_read_.Next(index); }
 
-  bool IsEmpty();
-  bool IsReady(int index);      // stands for its readiness for store or load in memory and the calculation of address
-  bool IsCompleted(int index);  // whether it has finished 3 cycles
+  bool IsEmpty() { return entries_read_.Empty(); }
+  bool IsReady(int index);  // stands for its readiness for store or load in memory and the calculation of address
+  bool IsCompleted(int index) { return entries_read_[index].IsCompleted(); }
+
+  void Update();
+  void Reset();
 
  private:
-  CircularQueue<LoadStoreBufferEntry> entries_;
-  u32 ready_size_;
+  CircularQueue<LoadStoreBufferEntry> entries_read_;
+  CircularQueue<LoadStoreBufferEntry> entries_write_;
+  u32 ready_count_read_;
+  u32 ready_count_write_;
 };
 
 }  // namespace riscv
