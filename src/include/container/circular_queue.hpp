@@ -7,6 +7,12 @@ namespace riscv {
 template <class T>
 class CircularQueue {
  public:
+  CircularQueue() {
+    head_ = 0;
+    tail_ = QUEUE_SIZE - 1;
+    size_ = 0;
+  }
+
   bool Full() const { return size_ == QUEUE_SIZE; }
   bool Empty() const { return size_ == 0; }
 
@@ -58,7 +64,7 @@ class CircularQueue {
     --size_;
   }
 
-  int FrontIndex() { return head_; }
+  int FrontIndex() { return size_ == 0 ? INVALID_ENTRY : head_; }
 
   T &Front() { return queue_[head_]; }
 
