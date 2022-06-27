@@ -50,7 +50,7 @@ class LoadStoreBuffer {
   int Push();
   bool Pop();
 
-  int GetFront() { return entries_read_.Front(); }
+  int GetFront() { return entries_read_.FrontIndex(); }
   void IncreaseCount(int index) { entries_write_[index].IncreaseCount(1); }
   void GetNext(int &index) { entries_read_.Next(index); }
 
@@ -60,6 +60,8 @@ class LoadStoreBuffer {
 
   void Update();
   void Reset();
+
+  void Print();
 
  private:
   CircularQueue<LoadStoreBufferEntry> entries_read_;

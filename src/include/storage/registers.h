@@ -36,6 +36,8 @@ class Registers {
 
   void Update();
 
+  void Print();
+
  private:
   Register pc_read_;
   Register pc_write_;

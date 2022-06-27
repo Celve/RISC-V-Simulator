@@ -1,5 +1,7 @@
 #include "storage/load_store_buffer.h"
 
+#include <iostream>
+
 #include "storage/reservation_station.h"
 
 namespace riscv {
@@ -30,7 +32,7 @@ int LoadStoreBuffer::Push() {
 }
 
 bool LoadStoreBuffer::Pop() {
-  int index = entries_write_.Front();
+  int index = entries_write_.FrontIndex();
   if (IsCompleted(index)) {
     Init(index);
     entries_write_.PopFront();
@@ -53,6 +55,20 @@ void LoadStoreBuffer::Update() {
 void LoadStoreBuffer::Reset() {
   while (entries_write_.Size() > ready_count_read_) {
     entries_write_.PopBack();
+  }
+}
+
+void LoadStoreBuffer::Print() {
+  int index = entries_read_.FrontIndex();
+  std::cout << "LoadStoreBuffer: " << std::endl;
+  std::cout << "type\taddress\tvalue\n";
+  while (index != INVALID_ENTRY) {
+    auto ins = entries_read_[index].GetIns();
+    auto ins_type = ins.GetInsType();
+    std::cout << static_cast<std::underlying_type<RiscvInsType>::type>(ins_type) << "\t"
+              << (GetA(index) == INVALID_ADDRESS ? -1 : GetA(index)) << "\t"
+              << (GetQk(index) != INVALID_ENTRY ? GetQk(index) : GetVk(index)) << "\n";
+    entries_read_.Next(index);
   }
 }
 

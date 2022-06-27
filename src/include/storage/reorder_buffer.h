@@ -61,12 +61,14 @@ class ReorderBuffer {
 
   void Init(int index) { entries_write_[index].Init(); }
 
-  int GetFront() { return entries_read_.Front(); }
+  int GetFront() { return entries_read_.FrontIndex(); }
   int Push();
   bool Pop();
 
   void Update();
   void Reset();
+
+  void Print();
 
   u32 GetRelativeCount();
 

@@ -2,6 +2,7 @@
 
 #include <queue>
 
+#include "container/circular_queue.hpp"
 #include "instruction/riscv_ins.h"
 #include "storage/reservation_station.h"
 
@@ -43,9 +44,11 @@ class InstructionQueue {
   void Update();
   void Reset();
 
+  void Print();
+
  private:
-  std::queue<InstructionQueueNode> queue_read_;
-  std::queue<InstructionQueueNode> queue_write_;
+  CircularQueue<InstructionQueueNode> queue_read_;
+  CircularQueue<InstructionQueueNode> queue_write_;
   bool stalled_read_;
   bool stalled_write_;
   u32 v_read_;

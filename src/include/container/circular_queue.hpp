@@ -58,7 +58,9 @@ class CircularQueue {
     --size_;
   }
 
-  int Front() { return head_; }
+  int FrontIndex() { return head_; }
+
+  T &Front() { return queue_[head_]; }
 
   u32 Size() { return size_; }
 

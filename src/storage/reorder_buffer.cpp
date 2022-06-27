@@ -1,5 +1,8 @@
 #include "storage/reorder_buffer.h"
 
+#include <iostream>
+
+#include "common/config.h"
 #include "instruction/riscv_general_type.h"
 #include "instruction/riscv_ins.h"
 
@@ -25,7 +28,7 @@ int ReorderBuffer::Push() {
 }
 
 bool ReorderBuffer::Pop() {
-  int index = entries_write_.Front();
+  int index = entries_write_.FrontIndex();
   if (!IsBusy(index)) {
     Init(index);
     entries_write_.PopFront();
@@ -47,7 +50,7 @@ u32 ReorderBuffer::GetRelativeCount() {
     return 0;
   }
   int count = 0;
-  int index = entries_read_.Front();
+  int index = entries_read_.FrontIndex();
   entries_read_.Next(index);
   while (index != INVALID_ENTRY) {
     auto ins = entries_read_[index].GetIns();
@@ -59,6 +62,18 @@ u32 ReorderBuffer::GetRelativeCount() {
     entries_read_.Next(index);
   }
   return count;
+}
+
+void ReorderBuffer::Print() {
+  int index = entries_read_.FrontIndex();
+  std::cout << "ReorderBuffer: " << std::endl;
+  std::cout << "ins\tstate\n";
+  while (index != INVALID_ENTRY) {
+    auto ins = entries_read_[index].GetIns();
+    std::cout << static_cast<std::underlying_type<RiscvInsType>::type>(ins.GetInsType()) << "\t"
+              << static_cast<std::underlying_type<TomasuloState>::type>(entries_read_[index].GetState()) << "\n";
+    entries_read_.Next(index);
+  }
 }
 
 }  // namespace riscv

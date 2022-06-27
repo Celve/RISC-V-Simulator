@@ -1,6 +1,7 @@
 #include "storage/reservation_station.h"
 
 #include <cstring>
+#include <iostream>
 
 #include "common/config.h"
 
@@ -66,6 +67,17 @@ void ReservationStation::Reset() {
     i.Init();
   }
   size_write_ = 0;
+}
+
+void ReservationStation::Print() {
+  std::cout << "Reservation Station: " << std::endl;
+  std::cout << "ins\trs\trt\n";
+  for (int i = 0; i < RESERVATION_STATION_SIZE; i++) {
+    auto ins = GetIns(i);
+    std::cout << static_cast<std::underlying_type<RiscvInsType>::type>(ins.GetInsType()) << "\t"
+              << (GetQj(i) != INVALID_ENTRY ? GetQj(i) : GetVj(i)) << "\t"
+              << (GetQk(i) != INVALID_ENTRY ? GetQk(i) : GetVk(i)) << "\n";
+  }
 }
 
 }  // namespace riscv

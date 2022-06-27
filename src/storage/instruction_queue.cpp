@@ -1,29 +1,31 @@
 #include "storage/instruction_queue.h"
 
+#include <iostream>
+
 namespace riscv {
 
 bool InstructionQueue::Push(u32 ins_hex, u32 pc, u32 supposed_pc) {
-  if (queue_write_.size() < INSTRUCTION_QUEUE_SIZE) {
-    queue_write_.push(InstructionQueueNode(ins_hex, pc, supposed_pc));
+  if (queue_write_.Size() < INSTRUCTION_QUEUE_SIZE) {
+    queue_write_.Push(InstructionQueueNode(ins_hex, pc, supposed_pc));
     return true;
   }
   return false;
 }
 
-InstructionQueueNode InstructionQueue::Front() { return queue_write_.front(); }
+InstructionQueueNode InstructionQueue::Front() { return queue_write_.Front(); }
 
 bool InstructionQueue::Pop() {
-  if (!queue_read_.empty()) {
-    queue_read_.pop();
-    queue_write_.pop();
+  if (!queue_read_.Empty()) {
+    queue_read_.PopFront();
+    queue_write_.PopFront();
     return true;
   }
   return false;
 }
 
-bool InstructionQueue::IsEmpty() { return queue_read_.empty(); }
+bool InstructionQueue::IsEmpty() { return queue_read_.Empty(); }
 
-bool InstructionQueue::IsFull() { return queue_read_.size() >= INSTRUCTION_QUEUE_SIZE; }
+bool InstructionQueue::IsFull() { return queue_read_.Size() >= INSTRUCTION_QUEUE_SIZE; }
 
 bool InstructionQueue::IsStalled() { return stalled_read_; }
 
@@ -39,12 +41,29 @@ void InstructionQueue::Update() {
 }
 
 void InstructionQueue::Reset() {
-  while (!queue_write_.empty()) {
-    queue_write_.pop();
+  while (!queue_write_.Empty()) {
+    queue_write_.PopFront();
   }
   stalled_write_ = false;
   v_write_ = 0;
   q_write_ = 0;
+}
+
+void InstructionQueue::Print() {
+  int index = queue_read_.FrontIndex();
+  std::cout << "InstructionQueue: " << std::endl;
+  std::cout << "type\trs\trt\trd\timm\n";
+  while (index != INVALID_ENTRY) {
+    auto hex = queue_read_[index].GetHex();
+    auto ins = RiscvIns(hex);
+    auto ins_type = ins.GetInsType();
+    std::cout << static_cast<std::underlying_type<RiscvInsType>::type>(ins_type) << "\t"
+              << (ins.GetRs() == INVALID_REGISTER ? -1 : ins.GetRs()) << "\t"
+              << (ins.GetRt() == INVALID_REGISTER ? -1 : ins.GetRt()) << "\t"
+              << (ins.GetRd() == INVALID_REGISTER ? -1 : ins.GetRd()) << "\t"
+              << (ins.GetImm() == INVALID_IMMEDIATE ? -1 : ins.GetImm()) << "\n";
+    queue_read_.Next(index);
+  }
 }
 
 }  // namespace riscv

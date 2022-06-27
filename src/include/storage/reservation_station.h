@@ -74,6 +74,8 @@ class ReservationStation {
   void Update();
   void Reset();
 
+  void Print();
+
  private:
   ReservationStationEntry entries_read_[RESERVATION_STATION_SIZE];
   ReservationStationEntry entries_write_[RESERVATION_STATION_SIZE];
