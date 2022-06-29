@@ -3,11 +3,11 @@
 namespace riscv {
 
 bool CommonDataBus::Push(u32 dest, u32 value) {
-  if (queue_write_.size() < COMMON_DATA_BUS_SIZE) {
-    queue_write_.push(CommonDataBusNode(dest, value));
-    return true;
-  }
-  return false;
+  // if (queue_write_.size() < COMMON_DATA_BUS_SIZE) {
+  queue_write_.push(CommonDataBusNode(dest, value));
+  return true;
+  // }
+  // return false;
 }
 
 bool CommonDataBus::Pop() {

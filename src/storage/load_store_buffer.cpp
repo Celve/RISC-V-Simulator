@@ -30,7 +30,7 @@ int LoadStoreBuffer::Push() {
 bool LoadStoreBuffer::Pop() {
   int index = entries_write_.FrontIndex();
   if (IsCompleted(index)) {
-    Init(index);
+    // Init(index);
     entries_write_.PopFront();
     --ready_count_read_;
     --ready_count_write_;
@@ -51,7 +51,6 @@ void LoadStoreBuffer::Update() {
 
 void LoadStoreBuffer::Reset() {
   // TODO(celve): I should use read instead of write
-  assert(ready_count_read_ == ready_count_write_);
   while (entries_write_.Size() > ready_count_write_) {
     entries_write_.PopBack();
   }

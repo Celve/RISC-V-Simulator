@@ -38,15 +38,10 @@ class CircularQueue {
       return INVALID_ENTRY;
     }
     ++size_;
-    if (tail_ >= QUEUE_SIZE) {
-      std::cerr << tail_ << std::endl;
-      assert(false);
-    }
     return Increase(tail_);
   }
 
   void Next(int &index) {
-    assert(index < QUEUE_SIZE);
     if (index == tail_) {
       index = INVALID_ENTRY;
     } else {
@@ -69,10 +64,6 @@ class CircularQueue {
     }
     Increase(head_);
     --size_;
-    if (tail_ >= QUEUE_SIZE) {
-      std::cerr << tail_ << std::endl;
-      assert(false);
-    }
   }
 
   void PopBack() {
@@ -81,10 +72,6 @@ class CircularQueue {
     }
     Decrease(tail_);
     --size_;
-    if (tail_ >= QUEUE_SIZE) {
-      std::cerr << tail_ << std::endl;
-      assert(false);
-    }
   }
 
   int FrontIndex() { return size_ == 0 ? INVALID_ENTRY : head_; }
@@ -93,10 +80,7 @@ class CircularQueue {
 
   u32 Size() { return size_; }
 
-  T &operator[](int index) {
-    assert(index < QUEUE_SIZE);
-    return queue_[index];
-  }
+  T &operator[](int index) { return queue_[index]; }
 
   u32 GetHead() { return head_; }
 
@@ -115,10 +99,6 @@ class CircularQueue {
       iter = QUEUE_SIZE - 1;
     } else {
       --iter;
-    }
-    if (iter >= QUEUE_SIZE) {
-      std::cerr << iter << std::endl;
-      assert(false);
     }
   }
 

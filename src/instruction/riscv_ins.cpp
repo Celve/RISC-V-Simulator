@@ -39,7 +39,6 @@ void RiscvIns::Init(u32 ins) {
   } else if (part1 == 35) {
     STypeInit(ins);
   } else {
-    assert(false);
     // TODO(celve): throw an error
   }
 }
@@ -112,7 +111,6 @@ void RiscvIns::ITypeInit(u32 ins) {
     ins_ = RiscvInsType::SRAI;
     imm_ = shamt;
   } else {
-    assert(false);
     // TODO(celve): the error
   }
 
