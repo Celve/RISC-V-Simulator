@@ -49,10 +49,10 @@ int ReorderBuffer::AttemptToIncreaseEnsured() {
 
 int ReorderBuffer::Push() {
   int index = entries_write_.Expand();
-  assert(index != INVALID_ENTRY);
-  if (index != INVALID_ENTRY) {
-    Init(index);
-  }
+  // assert(index != INVALID_ENTRY);
+  // if (index != INVALID_ENTRY) {
+  // Init(index);
+  // }
   return index;
 }
 

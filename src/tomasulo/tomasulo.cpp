@@ -104,8 +104,6 @@ bool Tomasulo::Issue() {
     int rob_index = rob_->Push();
     rss_->Init(rss_index);
     rob_->Init(rob_index);
-    assert(rob_index != -1);
-    assert(rss_index != -1);
     // TODO(celve): I haven't use the busy value
     rss_->MakeBusy(rss_index);
     rss_->SetDest(rss_index, rob_index);
@@ -223,7 +221,6 @@ bool Tomasulo::Execute() {
   // std::cout << "exec: " << rob_index << std::endl;
   cdb_->Push(rob_index, general_calc_->Execute(ins.GetInsType(), rss_->GetVj(rss_index), rss_->GetVk(rss_index),
                                                rss_->GetA(rss_index), ins.GetImm()));
-  assert(rob_->GetState(rob_index) == TomasuloState::kIssue);
   rob_->SetState(rob_index, TomasuloState::kExecute);
   rss_->Pop(rss_index);
 
