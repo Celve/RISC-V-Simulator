@@ -123,7 +123,6 @@ void Execute() {
 }
 
 int main() {
-  // freopen("data/testcases/multiarray.data", "r", stdin);
   SetUp();
   Input();
   Execute();

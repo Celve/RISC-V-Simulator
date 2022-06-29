@@ -102,12 +102,13 @@ bool Tomasulo::Issue() {
     /* for all instructions */
     int rss_index = rss_->Available();
     int rob_index = rob_->Push();
+
     rss_->Init(rss_index);
-    rob_->Init(rob_index);
-    // TODO(celve): I haven't use the busy value
     rss_->MakeBusy(rss_index);
     rss_->SetDest(rss_index, rob_index);
     rss_->SetIns(rss_index, ins);
+
+    rob_->Init(rob_index);
     rob_->SetIns(rob_index, ins);
     rob_->SetSupposedPc(rob_index, supposed_pc);
     rob_->SetPc(rob_index, pc);
@@ -343,9 +344,8 @@ bool Tomasulo::Commit() {
   u32 dest = rob_->GetIns(rob_index).GetRd();
   u32 value = rob_->GetValue(rob_index);
   if (dest != INVALID_REGISTER) {
-    // TODO(celve): violate the physical rule
     regs_->SetReg(dest, value);
-    if (regs_->GetReorderWrite(dest) == rob_index) {
+    if (regs_->GetReorder(dest) == rob_index) {
       regs_->SetReorder(dest, INVALID_ENTRY);
     }
   }

@@ -15,6 +15,8 @@ class Register {
 
   bool IsBusy();
 
+  void Reset();
+
  private:
   u32 reg_;
   u32 reorder_;
@@ -27,7 +29,6 @@ class Registers {
   u32 GetReg(int index);
   void SetReg(int index, u32 value);
   u32 GetReorder(int index);
-  u32 GetReorderWrite(int index) { return regs_write_[index].GetReorder(); }
   void SetReorder(int index, u32 value);
   u32 GetPc();
   void SetPc(u32 value);

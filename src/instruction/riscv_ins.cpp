@@ -39,7 +39,7 @@ void RiscvIns::Init(u32 ins) {
   } else if (part1 == 35) {
     STypeInit(ins);
   } else {
-    // TODO(celve): throw an error
+    assert(false);
   }
 }
 
@@ -68,7 +68,7 @@ void RiscvIns::BTypeInit(u32 ins) {
   } else if (part1 == 7) {
     ins_ = RiscvInsType::BGEU;
   } else {
-    // TODO(celve): add throw here
+    assert(false);
   }
 }
 
@@ -111,7 +111,7 @@ void RiscvIns::ITypeInit(u32 ins) {
     ins_ = RiscvInsType::SRAI;
     imm_ = shamt;
   } else {
-    // TODO(celve): the error
+    assert(false);
   }
 
   imm_ = Extend11(imm_);
@@ -153,7 +153,7 @@ void RiscvIns::LTypeInit(u32 ins) {
   } else if (part1 == 5) {
     ins_ = RiscvInsType::LHU;
   } else {
-    // TODO(celve): throw en error
+    assert(false);
   }
 }
 
@@ -190,7 +190,7 @@ void RiscvIns::RTypeInit(u32 ins) {
   } else if (part1 == 0 && part2 == 7) {
     ins_ = RiscvInsType::AND;
   } else {
-    // TODO(celve): resolve a error to be put in here
+    assert(false);
   }
 }
 
@@ -211,7 +211,7 @@ void RiscvIns::STypeInit(u32 ins) {
   } else if (part1 == 2) {
     ins_ = RiscvInsType::SW;
   } else {
-    // TODO(celve): throw an error
+    assert(false);
   }
 }
 
@@ -229,7 +229,7 @@ void RiscvIns::UTypeInit(u32 ins) {
   } else if (part1 == 23) {
     ins_ = RiscvInsType::AUIPC;
   } else {
-    // TODO(celve): add throw
+    assert(false);
   }
 }
 

@@ -23,6 +23,8 @@ void Register::SetReorder(u32 value) { reorder_ = value; }
 
 bool Register::IsBusy() { return reorder_ != INVALID_REORDER; }
 
+void Register::Reset() { reorder_ = INVALID_REORDER; }
+
 u32 Registers::GetReg(int index) { return regs_read_[index].GetValue(); }
 
 void Registers::SetReg(int index, u32 value) {
@@ -34,7 +36,9 @@ void Registers::SetReg(int index, u32 value) {
 u32 Registers::GetReorder(int index) { return regs_read_[index].GetReorder(); }
 
 void Registers::SetReorder(int index, u32 value) {
-  if (index != 0) {
+  /* only accept the first value */
+  // assert(regs_write_[index].GetReorder() == regs_read_[index].GetReorder());
+  if (index != 0 && regs_write_[index].GetReorder() == regs_read_[index].GetReorder()) {
     regs_write_[index].SetReorder(value);
   }
 }
@@ -58,8 +62,8 @@ void Registers::Update() {
 }
 
 void Registers::Reset() {
-  for (int i = 0; i < REGISTER_NUMBER; ++i) {
-    SetReorder(i, INVALID_REORDER);
+  for (auto &i : regs_write_) {
+    i.Reset();
   }
 }
 

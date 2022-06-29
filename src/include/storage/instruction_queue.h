@@ -33,7 +33,6 @@ class InstructionQueue {
   bool IsFull();
   bool IsStalled();
 
-  // TODO(celve): please also modify dest here
   void MakeStalled();
   void MakeNoStalled();
 
