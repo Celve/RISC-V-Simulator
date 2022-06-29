@@ -4,10 +4,12 @@
 
 #include "common/utils.h"
 #include "instruction/riscv_ins_type.h"
+#include "storage/load_store_buffer.h"
 
 namespace riscv {
 
-u32 MemoryCell::Load(const RiscvInsType &ins, u32 address) {
+u32 MemoryCell::Load(const LoadStoreBufferEntry &entry, u32 address) {
+  auto ins = entry.GetIns().GetInsType();
   switch (ins) {
     case RiscvInsType::LB:
       return Extend8(memory_->GetByte(address));
@@ -24,7 +26,8 @@ u32 MemoryCell::Load(const RiscvInsType &ins, u32 address) {
   }
 }
 
-void MemoryCell::Store(const RiscvInsType &ins, u32 address, u32 value) {
+void MemoryCell::Store(const LoadStoreBufferEntry &entry, u32 address, u32 value) {
+  auto ins = entry.GetIns().GetInsType();
   switch (ins) {
     case RiscvInsType::SB:
       memory_->SetByte(address, value);

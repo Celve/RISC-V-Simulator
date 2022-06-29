@@ -18,9 +18,9 @@ RiscvIns::RiscvIns(u32 ins) {
   Init(ins);
 }
 
-RiscvInsType RiscvIns::GetInsType() { return ins_; }
+const RiscvInsType &RiscvIns::GetInsType() const { return ins_; }
 
-RiscvGeneralType RiscvIns::GetGeneralType() { return general_; }
+const RiscvGeneralType &RiscvIns::GetGeneralType() const { return general_; }
 
 void RiscvIns::Init(u32 ins) {
   u32 part1 = Get6To0(ins);

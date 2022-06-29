@@ -26,7 +26,7 @@ class ReservationStationEntry {
   u32 GetQk() const { return qk_; }
   u32 GetDest() const { return dest_; }
   u32 GetA() { return a_; }
-  RiscvIns &GetIns() { return ins_; }
+  const RiscvIns &GetIns() const { return ins_; }
   bool IsBusy() const { return busy_; }
   bool IsReady() const { return qj_ == INVALID_ENTRY && qk_ == INVALID_ENTRY; }
 
@@ -59,7 +59,7 @@ class ReservationStation {
   u32 GetQk(int index) { return entries_read_[index].GetQk(); }
   u32 GetDest(int index) { return entries_read_[index].GetDest(); }
   u32 GetA(int index) { return entries_read_[index].GetA(); }
-  RiscvIns &GetIns(int index) { return entries_read_[index].GetIns(); }
+  const RiscvIns &GetIns(int index) { return entries_read_[index].GetIns(); }
 
   void Init(int index);
 

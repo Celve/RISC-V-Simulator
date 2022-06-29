@@ -27,8 +27,8 @@ class RiscvIns {
   u32 GetRd();
   u32 GetImm();
 
-  RiscvGeneralType GetGeneralType();
-  RiscvInsType GetInsType();
+  const RiscvGeneralType &GetGeneralType() const;
+  const RiscvInsType &GetInsType() const;
 
  private:
   RiscvGeneralType general_;

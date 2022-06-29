@@ -48,7 +48,8 @@ class LoadStoreBuffer {
   u32 GetQk(int index) { return entries_read_[index].GetQk(); }
   u32 GetDest(int index) { return entries_read_[index].GetDest(); }
   u32 GetA(int index) { return entries_read_[index].GetA(); }
-  RiscvIns &GetIns(int index) { return entries_read_[index].GetIns(); }
+  const RiscvIns &GetIns(int index) { return entries_read_[index].GetIns(); }
+  const LoadStoreBufferEntry &GetEntry(int index) { return entries_read_[index]; }
 
   void Init(int index) { entries_write_[index].Init(); }
 
