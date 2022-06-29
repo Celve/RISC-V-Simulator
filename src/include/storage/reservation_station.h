@@ -16,7 +16,7 @@ class ReservationStationEntry {
   void SetQk(u32 value) { qk_ = value; }
   void SetDest(u32 value) { dest_ = value; }
   void SetA(u32 value) { a_ = value; }
-  void SetIns(RiscvIns ins) { ins_ = ins; }
+  void SetIns(const RiscvIns &ins) { ins_ = ins; }
   void MakeBusy() { busy_ = true; }
   void MakeNoBusy() { busy_ = false; }
 
@@ -26,7 +26,7 @@ class ReservationStationEntry {
   u32 GetQk() const { return qk_; }
   u32 GetDest() const { return dest_; }
   u32 GetA() { return a_; }
-  RiscvIns GetIns() const { return ins_; }
+  RiscvIns &GetIns() { return ins_; }
   bool IsBusy() const { return busy_; }
   bool IsReady() const { return qj_ == INVALID_ENTRY && qk_ == INVALID_ENTRY; }
 
@@ -49,7 +49,7 @@ class ReservationStation {
   void SetQj(int index, u32 value) { entries_write_[index].SetQj(value); }
   void SetQk(int index, u32 value) { entries_write_[index].SetQk(value); }
   void SetDest(int index, u32 value) { entries_write_[index].SetDest(value); }
-  void SetIns(int index, RiscvIns ins) { entries_write_[index].SetIns(ins); }
+  void SetIns(int index, const RiscvIns &ins) { entries_write_[index].SetIns(ins); }
   void SetA(int index, u32 value) { entries_write_[index].SetA(value); }
   void MakeBusy(int index) { entries_write_[index].MakeBusy(); }
 
@@ -59,7 +59,7 @@ class ReservationStation {
   u32 GetQk(int index) { return entries_read_[index].GetQk(); }
   u32 GetDest(int index) { return entries_read_[index].GetDest(); }
   u32 GetA(int index) { return entries_read_[index].GetA(); }
-  RiscvIns GetIns(int index) { return entries_read_[index].GetIns(); }
+  RiscvIns &GetIns(int index) { return entries_read_[index].GetIns(); }
 
   void Init(int index);
 

@@ -11,6 +11,9 @@ cmake-build-debug/
 *.txt
 *.data
 
+# cz files
+.cz.json
+
 # data files
 data/
 
