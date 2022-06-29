@@ -37,7 +37,7 @@ class LoadStoreBuffer {
   void SetQk(int index, u32 value) { entries_write_[index].SetQk(value); }
   void SetDest(int index, u32 value) { entries_write_[index].SetDest(value); }
   void SetA(int index, u32 value) { entries_write_[index].SetA(value); }
-  void SetIns(int index, RiscvIns ins) { entries_write_[index].SetIns(ins); }
+  void SetIns(int index, const RiscvIns &ins) { entries_write_[index].SetIns(ins); }
   void MakeBusy(int index) { entries_write_[index].MakeBusy(); }
   void MakeCalculated(int index) { entries_write_[index].MakeCalculated(); }
   void IncreaseReadyCount(int delta) { ready_count_write_ += delta; }
@@ -48,7 +48,7 @@ class LoadStoreBuffer {
   u32 GetQk(int index) { return entries_read_[index].GetQk(); }
   u32 GetDest(int index) { return entries_read_[index].GetDest(); }
   u32 GetA(int index) { return entries_read_[index].GetA(); }
-  RiscvIns GetIns(int index) { return entries_read_[index].GetIns(); }
+  RiscvIns &GetIns(int index) { return entries_read_[index].GetIns(); }
 
   void Init(int index) { entries_write_[index].Init(); }
 

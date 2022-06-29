@@ -14,7 +14,7 @@ class ReorderBufferEntry {
 
   void Init();
 
-  void SetIns(RiscvIns ins) { ins_ = ins; }
+  void SetIns(const RiscvIns &ins) { ins_ = ins; }
   void SetValue(u32 value) { value_ = value; }
   void SetState(TomasuloState state) { state_ = state; }
   void SetSupposedPc(u32 value) { supposed_pc_ = value; }
@@ -52,7 +52,7 @@ class ReorderBuffer {
   void SetValue(int index, u32 value) { entries_write_[index].SetValue(value); }
   void SetSupposedPc(int index, u32 value) { entries_write_[index].SetSupposedPc(value); }
   void SetPc(int index, u32 value) { entries_write_[index].SetPc(value); }
-  void SetIns(int index, RiscvIns ins) { entries_write_[index].SetIns(ins); }
+  void SetIns(int index, const RiscvIns &ins) { entries_write_[index].SetIns(ins); }
   void SetState(int index, TomasuloState state) { entries_write_[index].SetState(state); }
 
   int AttemptToIncreaseEnsured();

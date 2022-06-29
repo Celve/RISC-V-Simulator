@@ -86,15 +86,6 @@ void Execute() {
   int cycles = 0;
   while (true) {
     ++cycles;
-    if (cycles == 1000000) {
-      std::cerr << "Get 1000000" << std::endl;
-    } else if (cycles == 10000000) {
-      std::cerr << "Get 10000000" << std::endl;
-    } else if (cycles == 50000000) {
-      std::cerr << "Get 50000000" << std::endl;
-    } else if (cycles == 100000000) {
-      std::cerr << "Get 100000000" << std::endl;
-    }
     bool state = false;
     /* fetch */
     state |= tomasulo->Fetch();
@@ -111,6 +102,7 @@ void Execute() {
     /* update */
     tomasulo->Update();
     if (!state && rob->IsEmpty()) {
+      std::cerr << cycles << std::endl;
       printf("%u\n", regs->GetReg(10) & 0xFFU);
       break;
     }
