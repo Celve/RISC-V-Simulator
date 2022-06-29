@@ -1,5 +1,7 @@
 #include "instruction/riscv_ins.h"
 
+#include <cassert>
+
 #include "common/config.h"
 #include "common/utils.h"
 #include "instruction/riscv_general_type.h"
