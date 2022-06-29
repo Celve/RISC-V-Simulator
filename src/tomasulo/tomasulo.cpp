@@ -239,9 +239,8 @@ bool Tomasulo::LoadAndStore() {
 
   auto ins = lsb_->GetIns(lsb_index);
   if (ins.GetGeneralType() == RiscvGeneralType::LType) {
-    lsb_->IncreaseCount(lsb_index);
-    if (lsb_->IsCompleted(lsb_index)) {
-      auto result = mc_->Load(lsb_->GetEntry(lsb_index), lsb_->GetA(lsb_index));
+    u32 result;
+    if (mc_->Load(lsb_->GetEntry(lsb_index), lsb_->GetA(lsb_index), result)) {
       auto rob_index = lsb_->GetDest(lsb_index);
       cdb_->Push(rob_index, result);
       rob_->SetState(rob_index, TomasuloState::kExecute);
@@ -249,9 +248,7 @@ bool Tomasulo::LoadAndStore() {
     }
   } else {
     /* s type is just a placeholder in rob, therefore there is no need to update it */
-    lsb_->IncreaseCount(lsb_index);
-    if (lsb_->IsCompleted(lsb_index)) {
-      mc_->Store(lsb_->GetEntry(lsb_index), lsb_->GetA(lsb_index), lsb_->GetVk(lsb_index));
+    if (mc_->Store(lsb_->GetEntry(lsb_index), lsb_->GetA(lsb_index), lsb_->GetVk(lsb_index))) {
       lsb_->Pop();
     }
   }

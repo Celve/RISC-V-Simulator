@@ -11,8 +11,8 @@ class MemoryCell {
  public:
   explicit MemoryCell(Memory *memory) : memory_(memory) {}
 
-  u32 Load(const LoadStoreBufferEntry &entry, u32 address);
-  void Store(const LoadStoreBufferEntry &entry, u32 address, u32 value);
+  bool Load(LoadStoreBufferEntry &entry, u32 address, u32 &result);
+  bool Store(LoadStoreBufferEntry &entry, u32 address, u32 value);
 
  private:
   Memory *memory_;

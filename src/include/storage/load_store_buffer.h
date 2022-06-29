@@ -49,7 +49,7 @@ class LoadStoreBuffer {
   u32 GetDest(int index) { return entries_read_[index].GetDest(); }
   u32 GetA(int index) { return entries_read_[index].GetA(); }
   const RiscvIns &GetIns(int index) { return entries_read_[index].GetIns(); }
-  const LoadStoreBufferEntry &GetEntry(int index) { return entries_read_[index]; }
+  LoadStoreBufferEntry &GetEntry(int index) { return entries_write_[index]; }
 
   void Init(int index) { entries_write_[index].Init(); }
 
@@ -57,13 +57,13 @@ class LoadStoreBuffer {
   bool Pop();
 
   int GetFront() { return entries_read_.FrontIndex(); }
-  void IncreaseCount(int index) { entries_write_[index].IncreaseCount(1); }
+  // void IncreaseCount(int index) { entries_write_[index].IncreaseCount(1); }
   void GetNext(int &index) { entries_read_.Next(index); }
 
   bool IsEmpty() { return entries_read_.Empty(); }
   bool IsFull() { return entries_read_.Full(); }
   bool IsReady(int index);  // stands for its readiness for store or load in memory and the calculation of address
-  bool IsCompleted(int index) { return entries_read_[index].IsCompleted(); }
+  bool IsCompleted(int index) { return entries_write_[index].IsCompleted(); }
   bool IsCalculated(int index) { return entries_read_[index].IsCalculated(); }
 
   void Update();
