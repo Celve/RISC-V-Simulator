@@ -9,6 +9,7 @@ cmake-build-debug/
 
 # redundant files
 *.txt
+*.data
 
 # cz files
 .cz.json
