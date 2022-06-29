@@ -2,14 +2,10 @@
 
 #include <iostream>
 
+#include "common/config.h"
 #include "storage/reservation_station.h"
 
 namespace riscv {
-
-void LoadStoreBufferEntry::SetA(u32 value) {
-  ReservationStationEntry::SetA(value);
-  calculated_ = true;
-}
 
 void LoadStoreBufferEntry::Init() {
   ReservationStationEntry::Init();
@@ -44,7 +40,8 @@ bool LoadStoreBuffer::Pop() {
 }
 
 bool LoadStoreBuffer::IsReady(int index) {
-  return entries_read_[index].IsCalculated() && entries_read_.Rank(index) < ready_count_read_;
+  return entries_read_[index].IsCalculated() && entries_read_.Rank(index) < ready_count_read_ &&
+         GetQk(index) == INVALID_ENTRY;
 }
 
 void LoadStoreBuffer::Update() {
@@ -53,7 +50,9 @@ void LoadStoreBuffer::Update() {
 }
 
 void LoadStoreBuffer::Reset() {
-  while (entries_write_.Size() > ready_count_read_) {
+  // TODO(celve): I should use read instead of write
+  assert(ready_count_read_ == ready_count_write_);
+  while (entries_write_.Size() > ready_count_write_) {
     entries_write_.PopBack();
   }
 }
@@ -61,12 +60,21 @@ void LoadStoreBuffer::Reset() {
 void LoadStoreBuffer::Print() {
   int index = entries_read_.FrontIndex();
   std::cout << "LoadStoreBuffer😉: " << std::endl;
-  std::cout << "type\taddress\tvalue\n";
+  std::cout << "The ready count is " << ready_count_read_ << std::endl;
+  std::cout << "type\taddress\tvalue\tcount\t \n";
   while (index != INVALID_ENTRY) {
     auto ins = entries_read_[index].GetIns();
     auto ins_type = ins.GetInsType();
-    std::cout << ToString(ins_type) << "\t" << (GetA(index) == INVALID_ADDRESS ? -1 : GetA(index)) << "\t"
-              << (GetQk(index) != INVALID_ENTRY ? GetQk(index) : GetVk(index)) << "\n";
+    std::cout << ToString(ins_type) << "\t" << (!IsCalculated(index) ? -1 : GetA(index)) << "\t";
+
+    if (GetQk(index) != INVALID_ENTRY) {
+      std::cout << "➡️" << GetQk(index) << "\t";
+    } else {
+      std::cout << GetVk(index) << "\t";
+    }
+
+    std::cout << entries_read_[index].GetCount() << "\t"
+              << "\n";
     entries_read_.Next(index);
   }
 }

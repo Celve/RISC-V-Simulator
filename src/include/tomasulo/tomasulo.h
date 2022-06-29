@@ -9,6 +9,7 @@
 #include "storage/reorder_buffer.h"
 #include "storage/reservation_station.h"
 #include "unit/arithmetic_logic_unit.h"
+#include "unit/memory_cell.h"
 
 namespace riscv {
 
@@ -18,7 +19,7 @@ class Tomasulo {
  public:
   explicit Tomasulo(Registers *regs, Memory *memory, InstructionQueue *iq, ReorderBuffer *rob, ReservationStation *rss,
                     LoadStoreBuffer *lsb, CommonDataBus *cdb, BranchPredictor *bp, ArithmeticLogicUnit *general_calc,
-                    ArithmeticLogicUnit *address_calc);
+                    ArithmeticLogicUnit *address_calc, MemoryCell *mc);
   ~Tomasulo() = default;
 
   Registers *GetRegs() { return regs_; }
@@ -58,6 +59,8 @@ class Tomasulo {
 
   ArithmeticLogicUnit *general_calc_;
   ArithmeticLogicUnit *address_calc_;
+
+  MemoryCell *mc_;
 };
 
 }  // namespace riscv

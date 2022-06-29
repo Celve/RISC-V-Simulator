@@ -1,5 +1,7 @@
 #include "storage/reorder_buffer.h"
 
+#include <cassert>
+#include <ios>
 #include <iostream>
 
 #include "common/config.h"
@@ -15,13 +17,39 @@ ReorderBufferEntry::ReorderBufferEntry() {
 }
 
 void ReorderBufferEntry::Init() {
-  busy_ = false;
   state_ = TomasuloState::kUndefine;
   supposed_pc_ = INVALID_ADDRESS;
 }
 
+ReorderBuffer::ReorderBuffer() { ensured_read_ = ensured_write_ = QUEUE_SIZE - 1; }
+
+void ReorderBuffer::IncreaseEnsured(int delta) {
+  ensured_write_ += delta;
+  if (ensured_write_ >= QUEUE_SIZE) {
+    ensured_write_ -= QUEUE_SIZE;
+  }
+}
+
+int ReorderBuffer::AttemptToIncreaseEnsured() {
+  int temp = ensured_read_;
+  int count = 0;
+  while (true) {
+    entries_read_.Next(temp);
+    if (temp == INVALID_ENTRY) {
+      return count;
+    }
+    auto general_type = entries_read_[temp].GetIns().GetGeneralType();
+    if (general_type == RiscvGeneralType::BType) {
+      return count;
+    }
+    ensured_write_ = temp;
+    count += int(general_type == RiscvGeneralType::LType || general_type == RiscvGeneralType::SType);
+  }
+}
+
 int ReorderBuffer::Push() {
   int index = entries_write_.Expand();
+  assert(index != INVALID_ENTRY);
   if (index != INVALID_ENTRY) {
     Init(index);
   }
@@ -30,7 +58,7 @@ int ReorderBuffer::Push() {
 
 bool ReorderBuffer::Pop() {
   int index = entries_write_.FrontIndex();
-  if (!IsBusy(index)) {
+  if (index != INVALID_ENTRY) {
     Init(index);
     entries_write_.PopFront();
     return true;
@@ -38,40 +66,26 @@ bool ReorderBuffer::Pop() {
   return false;
 }
 
-void ReorderBuffer::Update() { entries_read_ = entries_write_; }
-
-void ReorderBuffer::Reset() {
-  while (!entries_write_.Empty()) {
-    entries_write_.PopBack();
-  }
+void ReorderBuffer::Update() {
+  entries_read_ = entries_write_;
+  ensured_read_ = ensured_write_;
 }
 
-u32 ReorderBuffer::GetRelativeCount() {
-  if (entries_read_.Empty()) {
-    return 0;
-  }
-  int count = 0;
-  int index = entries_read_.FrontIndex();
-  entries_read_.Next(index);
-  while (index != INVALID_ENTRY) {
-    auto ins = entries_read_[index].GetIns();
-    if (ins.GetGeneralType() == RiscvGeneralType::LType || ins.GetGeneralType() == RiscvGeneralType::SType) {
-      ++count;
-    } else if (ins.GetGeneralType() == RiscvGeneralType::JType) {
-      return count;
-    }
-    entries_read_.Next(index);
-  }
-  return count;
+void ReorderBuffer::Reset() {
+  entries_write_.Clear();
+  ensured_write_ = QUEUE_SIZE - 1;
 }
 
 void ReorderBuffer::Print() {
   int index = entries_read_.FrontIndex();
   std::cout << "ReorderBuffer😉: " << std::endl;
-  std::cout << "ins\tstate\n";
+  std::cout << std::dec << ensured_read_ << std::endl;
+  std::cout << "pc\tins\tid\tstate\tvalue\tdest\n";
   while (index != INVALID_ENTRY) {
     auto ins = entries_read_[index].GetIns();
-    std::cout << ToString(ins.GetInsType()) << "\t" << ToString(entries_read_[index].GetState()) << "\n";
+    std::cout << std::hex << entries_read_[index].GetPc() << "\t" << std::dec << index << "\t"
+              << ToString(ins.GetInsType()) << "\t" << ToString(entries_read_[index].GetState()) << "\t"
+              << entries_read_[index].GetValue() << "\t" << entries_read_[index].GetIns().GetRd() << "\n";
     entries_read_.Next(index);
   }
 }

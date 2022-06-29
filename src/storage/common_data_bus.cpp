@@ -1,5 +1,3 @@
-#pragma once
-
 #include "storage/common_data_bus.h"
 
 namespace riscv {

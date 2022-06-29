@@ -4,6 +4,7 @@
 namespace riscv {
 
 enum class RiscvInsType {
+  Unknown,
   BEQ,
   BNE,
   BLT,

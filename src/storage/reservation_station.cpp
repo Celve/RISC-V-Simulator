@@ -33,7 +33,7 @@ void ReservationStation::Init(int index) { entries_write_[index].Init(); }
 
 int ReservationStation::FindReady() {
   for (int i = 0; i < RESERVATION_STATION_SIZE; i++) {
-    if (!entries_read_[i].IsReady()) {
+    if (entries_read_[i].IsBusy() && entries_read_[i].IsReady()) {
       return i;
     }
   }
@@ -50,10 +50,7 @@ void ReservationStation::Pop(int index) {
   if (index == INVALID_ENTRY) {
     return;
   }
-  entries_write_[index].MakeNoBusy();
-  entries_write_[index].SetQj(INVALID_ENTRY);
-  entries_write_[index].SetQk(INVALID_ENTRY);
-  entries_write_[index].SetDest(INVALID_ENTRY);
+  entries_write_[index].Init();
   --size_write_;
 }
 
@@ -71,12 +68,24 @@ void ReservationStation::Reset() {
 
 void ReservationStation::Print() {
   std::cout << "Reservation Station😉: " << std::endl;
-  std::cout << "ins\trs\trt\n";
-  for (int i = 0; i < RESERVATION_STATION_SIZE / 4; i++) {
+  std::cout << "id\tins\trs\trt\trob\n";
+  for (int i = 0; i < RESERVATION_STATION_SIZE; i++) {
+    if (!entries_read_[i].IsBusy()) {
+      continue;
+    }
     auto ins = GetIns(i);
-    std::cout << static_cast<std::underlying_type<RiscvInsType>::type>(ins.GetInsType()) << "\t"
-              << (GetQj(i) != INVALID_ENTRY ? GetQj(i) : GetVj(i)) << "\t"
-              << (GetQk(i) != INVALID_ENTRY ? GetQk(i) : GetVk(i)) << "\n";
+    std::cout << i << "\t" << ToString(ins.GetInsType()) << "\t";
+    if (GetQj(i) == INVALID_ENTRY) {
+      std::cout << int(GetVj(i)) << "\t";
+    } else {
+      std::cout << "➡️" << int(GetQj(i)) << "\t";
+    }
+    if (GetQk(i) == INVALID_ENTRY) {
+      std::cout << int(GetVk(i)) << "\t";
+    } else {
+      std::cout << "➡️" << int(GetQk(i)) << "\t";
+    }
+    std::cout << int(GetDest(i)) << std::endl;
   }
 }
 

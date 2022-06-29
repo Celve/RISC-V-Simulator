@@ -8,7 +8,13 @@
 
 namespace riscv {
 
-RiscvIns::RiscvIns(u32 ins) { Init(ins); }
+RiscvIns::RiscvIns(u32 ins) {
+  rs_ = INVALID_REGISTER;
+  rt_ = INVALID_REGISTER;
+  rd_ = INVALID_REGISTER;
+  imm_ = INVALID_IMMEDIATE;
+  Init(ins);
+}
 
 RiscvInsType RiscvIns::GetInsType() { return ins_; }
 
@@ -31,6 +37,7 @@ void RiscvIns::Init(u32 ins) {
   } else if (part1 == 35) {
     STypeInit(ins);
   } else {
+    assert(false);
     // TODO(celve): throw an error
   }
 }
@@ -70,6 +77,7 @@ void RiscvIns::BTypeInit(u32 ins) {
  * it should be executed by alu
  */
 void RiscvIns::ITypeInit(u32 ins) {
+  general_ = RiscvGeneralType::IType;
   u32 part1 = Get31To25(ins);
   u32 shamt = Get24To20(ins);
   imm_ = Get31To20(ins);
@@ -102,6 +110,7 @@ void RiscvIns::ITypeInit(u32 ins) {
     ins_ = RiscvInsType::SRAI;
     imm_ = shamt;
   } else {
+    assert(false);
     // TODO(celve): the error
   }
 
@@ -114,6 +123,7 @@ void RiscvIns::ITypeInit(u32 ins) {
  * it should be stored by reservation station
  */
 void RiscvIns::JTypeInit(u32 ins) {
+  general_ = RiscvGeneralType::JType;
   imm_ = Extend20(((ins >> 31 & 0x1) << 20) | ((ins >> 21 & 0x3FF) << 1) | ((ins >> 20 & 0x1) << 11) |
                   ((ins >> 12 & 0xFF) << 12));
   rd_ = Get11To7(ins);
@@ -126,10 +136,11 @@ void RiscvIns::JTypeInit(u32 ins) {
  * it should be executed by load and store buffer
  */
 void RiscvIns::LTypeInit(u32 ins) {
+  general_ = RiscvGeneralType::LType;
   imm_ = Extend11(Get31To20(ins));
   rs_ = Get19To15(ins);
   u32 part1 = Get14To12(ins);
-  rt_ = Get11To7(ins);
+  rd_ = Get11To7(ins);
 
   if (part1 == 0) {
     ins_ = RiscvInsType::LB;
@@ -151,6 +162,7 @@ void RiscvIns::LTypeInit(u32 ins) {
  * R type includes rs, rt, and rd
  */
 void RiscvIns::RTypeInit(u32 ins) {
+  general_ = RiscvGeneralType::RType;
   u32 part1 = Get31To25(ins);
   rt_ = Get24To20(ins);
   rs_ = Get19To15(ins);
@@ -187,6 +199,7 @@ void RiscvIns::RTypeInit(u32 ins) {
  * S type includes rs, rt, and imm
  */
 void RiscvIns::STypeInit(u32 ins) {
+  general_ = RiscvGeneralType::SType;
   imm_ = Extend11(((ins >> 25 & 0x7F) << 5) | (ins >> 7 & 0x1F));
   rt_ = Get24To20(ins);
   rs_ = Get19To15(ins);
@@ -207,6 +220,7 @@ void RiscvIns::STypeInit(u32 ins) {
  * U type includes rd, imm
  */
 void RiscvIns::UTypeInit(u32 ins) {
+  general_ = RiscvGeneralType::UType;
   imm_ = Get31To12(ins) << 12;
   rd_ = Get11To7(ins);
   u32 part1 = Get6To0(ins);

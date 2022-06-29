@@ -1,10 +1,17 @@
 #include "tomasulo/tomasulo.h"
 
+#include <cassert>
+#include <iostream>
+
+#include "common/config.h"
+#include "instruction/riscv_general_type.h"
+#include "unit/memory_cell.h"
+
 namespace riscv {
 
 Tomasulo::Tomasulo(Registers *regs, Memory *memory, InstructionQueue *iq, ReorderBuffer *rob, ReservationStation *rss,
                    LoadStoreBuffer *lsb, CommonDataBus *cdb, BranchPredictor *bp, ArithmeticLogicUnit *general_calc,
-                   ArithmeticLogicUnit *address_calc)
+                   ArithmeticLogicUnit *address_calc, MemoryCell *mc)
     : regs_(regs),
       memory_(memory),
       iq_(iq),
@@ -14,7 +21,8 @@ Tomasulo::Tomasulo(Registers *regs, Memory *memory, InstructionQueue *iq, Reorde
       cdb_(cdb),
       bp_(bp),
       general_calc_(general_calc),
-      address_calc_(address_calc) {}
+      address_calc_(address_calc),
+      mc_(mc) {}
 
 /******************************************************************************
  * FETCH
@@ -36,15 +44,29 @@ bool Tomasulo::Fetch() {
   auto supposed_pc = regs_->GetPc() + 4;  // completed immediately
 
   /* the instruction jalr would stall the fetching process */
-  if (ins.GetInsType() == RiscvInsType::JALR && !iq_->IsStalled()) {
-    iq_->MakeStalled();
-    iq_->SetQ(ins.GetRs());
-    return false;
-  }
 
   /* compute the destination in one cycle */
-  if (ins.GetInsType() == RiscvInsType::JALR) {
+  if (ins.GetInsType() == RiscvInsType::JALR && !iq_->IsStalled()) {
+    auto rs = ins.GetRs();
+    u32 result = 0;
+    if (regs_->IsBusy(rs)) {
+      auto h = regs_->GetReorder(rs);
+      if (rob_->IsReady(h)) {
+        result = rob_->GetValue(h);
+      } else if (!cdb_->IsEmpty() && cdb_->Front().GetDest() == h) {
+        result = cdb_->Front().GetValue();
+      } else {
+        iq_->SetQ(h);
+        iq_->MakeStalled();
+        return false;
+      }
+    } else {
+      result = regs_->GetReg(rs);
+    }
+    supposed_pc = (result + int(ins.GetImm())) & (~1);
+  } else if (ins.GetInsType() == RiscvInsType::JALR && iq_->IsStalled()) {
     supposed_pc = (iq_->GetV() + int(ins.GetImm())) & (~1);
+    iq_->MakeNoStalled();
   } else if (ins.GetGeneralType() == RiscvGeneralType::BType) {
     if (bp_->Predict(pc)) {
       supposed_pc = regs_->GetPc() + ins.GetImm();
@@ -66,27 +88,12 @@ bool Tomasulo::Issue() {
   }
 
   auto iq_front = iq_->Front();
-  iq_->Pop();
   auto hex = iq_front.GetHex();
   auto pc = iq_front.GetPc();
   auto supposed_pc = iq_front.GetSupposedPc();
 
   RiscvIns ins(hex);
-  if (ins.GetGeneralType() == RiscvGeneralType::UType) {
-    if (rob_->IsFull()) {
-      return false;
-    }
-    int rob_index = rob_->Push();
-    rob_->Init(rob_index);
-    rob_->SetIns(rob_index, ins);
-    rob_->SetValue(rob_index, int(ins.GetImm()) + (ins.GetInsType() == RiscvInsType::LUI ? 0U : pc));
-    rob_->SetSupposedPc(rob_index, supposed_pc);
-    rob_->SetState(rob_index, TomasuloState::kIssue);
-    regs_->SetReorder(ins.GetRd(), rob_index);
-  } else if (ins.GetGeneralType() == RiscvGeneralType::JType) {
-    // TODO(celve): I even don't need to put it into ROB?
-  } else if (ins.GetGeneralType() == RiscvGeneralType::RType || ins.GetGeneralType() == RiscvGeneralType::IType ||
-             ins.GetGeneralType() == RiscvGeneralType::BType) {
+  if (ins.GetGeneralType() != RiscvGeneralType::SType && ins.GetGeneralType() != RiscvGeneralType::LType) {
     /* find avaiable RS and ROB */
     if (rss_->IsFull() || rob_->IsFull()) {
       return false;
@@ -97,17 +104,26 @@ bool Tomasulo::Issue() {
     int rob_index = rob_->Push();
     rss_->Init(rss_index);
     rob_->Init(rob_index);
+    assert(rob_index != -1);
+    assert(rss_index != -1);
     // TODO(celve): I haven't use the busy value
-    rss_->SetA(rss_index, pc);
     rss_->MakeBusy(rss_index);
     rss_->SetDest(rss_index, rob_index);
+    rss_->SetIns(rss_index, ins);
     rob_->SetIns(rob_index, ins);
     rob_->SetSupposedPc(rob_index, supposed_pc);
+    rob_->SetPc(rob_index, pc);
     rob_->SetState(rob_index, TomasuloState::kIssue);
 
-    if (ins.GetGeneralType() == RiscvGeneralType::BType) {
+    if (ins.GetGeneralType() == RiscvGeneralType::JType || ins.GetInsType() == RiscvInsType::JALR) {
+      rss_->SetVj(rss_index, pc);
+      rss_->SetVk(rss_index, 4);
+      regs_->SetReorder(ins.GetRd(), rob_index);
+    } else if (ins.GetGeneralType() == RiscvGeneralType::BType) {
       FetchRs(ins.GetRs(), rss_, rss_index);
       FetchRt(ins.GetRt(), rss_, rss_index);
+      /* a now is used for recording pc */
+      rss_->SetA(rss_index, pc);
     } else if (ins.GetGeneralType() == RiscvGeneralType::IType) {
       FetchRs(ins.GetRs(), rss_, rss_index);
       rss_->SetVk(rss_index, ins.GetImm());
@@ -116,8 +132,15 @@ bool Tomasulo::Issue() {
       FetchRs(ins.GetRs(), rss_, rss_index);
       FetchRt(ins.GetRt(), rss_, rss_index);
       regs_->SetReorder(ins.GetRd(), rob_index);
+    } else if (ins.GetGeneralType() == RiscvGeneralType::UType) {
+      rss_->SetVj(rss_index, ins.GetImm());
+      rss_->SetVk(rss_index, ins.GetInsType() == RiscvInsType::AUIPC ? pc : 0);
+      regs_->SetReorder(ins.GetRd(), rob_index);
     }
   } else {
+    if (rob_->IsFull() || lsb_->IsFull()) {
+      return false;
+    }
     int lsb_index = lsb_->Push();
     int rob_index = rob_->Push();
     lsb_->Init(lsb_index);
@@ -126,9 +149,11 @@ bool Tomasulo::Issue() {
     // TODO(celve): I haven't use the busy value
     lsb_->MakeBusy(lsb_index);
     lsb_->SetDest(lsb_index, rob_index);
+    lsb_->SetIns(lsb_index, ins);
     rob_->SetIns(rob_index, ins);
     rob_->SetSupposedPc(rob_index, supposed_pc);
     rob_->SetState(rob_index, TomasuloState::kIssue);
+    rob_->SetPc(rob_index, pc);
     /* for store */
     if (ins.GetGeneralType() == RiscvGeneralType::SType) {
       FetchRs(ins.GetRs(), lsb_, lsb_index);
@@ -142,12 +167,8 @@ bool Tomasulo::Issue() {
       lsb_->SetA(lsb_index, ins.GetImm());
       regs_->SetReorder(ins.GetRd(), rob_index);
     }
-
-    /* update ready count */
-    if (rob_->GetBranchCount() == 0U) {
-      lsb_->IncreaseReadyCount(1);
-    }
   }
+  iq_->Pop();
   return true;
 }
 
@@ -160,7 +181,8 @@ void Tomasulo::FetchRs(u32 rs, Buffer *buffer, int index) {
     auto h = regs_->GetReorder(rs);
     if (rob_->IsReady(h)) {
       buffer->SetVj(index, rob_->GetValue(h));
-      buffer->SetQj(index, 0);
+    } else if (!cdb_->IsEmpty() && cdb_->Front().GetDest() == h) {
+      buffer->SetVj(index, cdb_->Front().GetValue());
     } else {
       buffer->SetQj(index, h);
     }
@@ -178,7 +200,8 @@ void Tomasulo::FetchRt(u32 rt, Buffer *buffer, int index) {
     auto h = regs_->GetReorder(rt);
     if (rob_->IsReady(h)) {
       buffer->SetVk(index, rob_->GetValue(h));
-      buffer->SetQk(index, 0);
+    } else if (!cdb_->IsEmpty() && cdb_->Front().GetDest() == h) {
+      buffer->SetVk(index, cdb_->Front().GetValue());
     } else {
       buffer->SetQk(index, h);
     }
@@ -197,8 +220,10 @@ bool Tomasulo::Execute() {
   }
   auto ins = rss_->GetIns(rss_index);
   auto rob_index = rss_->GetDest(rss_index);
+  // std::cout << "exec: " << rob_index << std::endl;
   cdb_->Push(rob_index, general_calc_->Execute(ins.GetInsType(), rss_->GetVj(rss_index), rss_->GetVk(rss_index),
                                                rss_->GetA(rss_index), ins.GetImm()));
+  assert(rob_->GetState(rob_index) == TomasuloState::kIssue);
   rob_->SetState(rob_index, TomasuloState::kExecute);
   rss_->Pop(rss_index);
 
@@ -218,15 +243,17 @@ bool Tomasulo::LoadAndStore() {
   if (ins.GetGeneralType() == RiscvGeneralType::LType) {
     lsb_->IncreaseCount(lsb_index);
     if (lsb_->IsCompleted(lsb_index)) {
-      auto result = lsb_->GetVk(lsb_index);
+      auto result = mc_->Load(ins.GetInsType(), lsb_->GetA(lsb_index));
       auto rob_index = lsb_->GetDest(lsb_index);
       cdb_->Push(rob_index, result);
       rob_->SetState(rob_index, TomasuloState::kExecute);
       lsb_->Pop();
     }
   } else {
+    /* s type is just a placeholder in rob, therefore there is no need to update it */
     lsb_->IncreaseCount(lsb_index);
     if (lsb_->IsCompleted(lsb_index)) {
+      mc_->Store(ins.GetInsType(), lsb_->GetA(lsb_index), lsb_->GetVk(lsb_index));
       lsb_->Pop();
     }
   }
@@ -239,10 +266,11 @@ bool Tomasulo::CalculateAddress() {
   }
   int lsb_index = lsb_->GetFront();
   while (lsb_index != INVALID_ENTRY) {
-    if (lsb_->GetQj(lsb_index) == INVALID_ENTRY) {
+    if (lsb_->GetQj(lsb_index) == INVALID_ENTRY && !lsb_->IsCalculated(lsb_index)) {
       auto ins = lsb_->GetIns(lsb_index);
       auto address = address_calc_->Execute(ins.GetInsType(), lsb_->GetA(lsb_index), lsb_->GetVj(lsb_index));
       lsb_->SetA(lsb_index, address);
+      lsb_->MakeCalculated(lsb_index);
       return true;
     }
     lsb_->GetNext(lsb_index);
@@ -262,11 +290,7 @@ bool Tomasulo::WriteResult() {
   u32 value = cdb_front.GetValue();
   cdb_->Pop();
 
-  /* for instruction queue */
-  if (iq_->GetQ() == dest) {
-    iq_->SetQ(INVALID_ENTRY);
-    iq_->SetV(value);
-  }
+  // std::cout << "transfer: " << dest << " " << value << std::endl;
 
   /* for load and store buffer */
   TraverseToSet(dest, value, lsb_);
@@ -275,6 +299,11 @@ bool Tomasulo::WriteResult() {
   rob_->SetState(dest, TomasuloState::kWriteResult);
   /* for reservation stations */
   TraverseToSet(dest, value, rss_);
+  /* for instruction queue */
+  if (iq_->GetQ() == dest) {
+    iq_->SetQ(INVALID_ENTRY);
+    iq_->SetV(value);
+  }
 
   return true;
 }
@@ -299,35 +328,53 @@ void Tomasulo::TraverseToSet(u32 dest, u32 value, Buffer *buffer) {
  * Commit
  ******************************************************************************/
 bool Tomasulo::Commit() {
+  lsb_->IncreaseReadyCount(rob_->AttemptToIncreaseEnsured());
+  if (rob_->IsEmpty()) {
+    return false;
+  }
   int rob_index = rob_->GetFront();
-  if (rob_index == INVALID_ENTRY || rob_->GetState(rob_index) != TomasuloState::kWriteResult) {
+  auto ins = rob_->GetIns(rob_index);
+  if (ins.GetGeneralType() == RiscvGeneralType::SType) {
+    // std::cout << "This is " << std::hex << rob_->GetPc(rob_index) << std::endl;
+    // regs_->Print();
+    rob_->Pop();
+    return true;
+  }
+  if (rob_->GetState(rob_index) != TomasuloState::kWriteResult) {
     return false;
   }
   u32 dest = rob_->GetIns(rob_index).GetRd();
   u32 value = rob_->GetValue(rob_index);
   if (dest != INVALID_REGISTER) {
+    // TODO(celve): violate the physical rule
     regs_->SetReg(dest, value);
+    if (regs_->GetReorderWrite(dest) == rob_index) {
+      regs_->SetReorder(dest, INVALID_ENTRY);
+    }
   }
-  regs_->SetReorder(dest, INVALID_REORDER);
-  rob_->SetState(rob_index, TomasuloState::kCommit);
 
-  auto ins = rob_->GetIns(rob_index);
+  rob_->SetState(rob_index, TomasuloState::kCommit);
   if (ins.GetGeneralType() != RiscvGeneralType::BType) {
+    // std::cout << "This is " << std::hex << rob_->GetPc(rob_index) << std::endl;
+    // regs_->Print();
     rob_->Pop();
     return true;
   }
+  rob_->IncreaseEnsured(1);
   auto correct_pc = rob_->GetValue(rob_index);
   if (correct_pc != rob_->GetSupposedPc(rob_index)) {
     // the speculation is wrong, therefore reset
+    // std::cout << "This is " << std::hex << rob_->GetPc(rob_index) << std::endl;
+    // regs_->Print();
     regs_->SetPc(correct_pc);
-    Reset();
     auto hexs_pc = rob_->GetPc(rob_index);
+    Reset();
     bp_->Feedback(hexs_pc, correct_pc != hexs_pc + 4);
   } else {
-    int count = rob_->GetRelativeCount();
-    lsb_->IncreaseReadyCount(count);
+    // std::cout << "This is " << std::hex << rob_->GetPc(rob_index) << std::endl;
+    // regs_->Print();
+    rob_->Pop();
   }
-  rob_->Pop();
   // TODO(celve): add judgement for appending load and store buffer
   return true;
 }
@@ -338,6 +385,7 @@ void Tomasulo::Reset() {
   rob_->Reset();
   rss_->Reset();
   cdb_->Reset();
+  regs_->Reset();
 }
 
 /******************************************************************************
@@ -349,6 +397,7 @@ void Tomasulo::Update() {
   lsb_->Update();
   iq_->Update();
   cdb_->Update();
+  regs_->Update();
 }
 
 }  // namespace riscv

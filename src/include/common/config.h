@@ -22,7 +22,7 @@ using u8 = uint8_t;
 #define REORDER_BUFFER_SIZE 32       // the size of reorder buffer
 #define RESERVATION_STATION_SIZE 32  // the size of reservation station
 #define LOAD_STORE_BUFFER_SIZE 32    // the size of load store buffer
-#define INSTRUCTION_QUEUE_SIZE 32    // the size of instruction queue
+#define INSTRUCTION_QUEUE_SIZE 1     // the size of instruction queue
 #define QUEUE_SIZE 32                // the size of queue
 #define COMMON_DATA_BUS_SIZE 32      // the size of the comon data bus
 

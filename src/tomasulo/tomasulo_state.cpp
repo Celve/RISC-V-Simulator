@@ -11,7 +11,7 @@ std::string ToString(const TomasuloState &tomasulo_state) {
     case TomasuloState::kExecute:
       return "Execute";
     case TomasuloState::kWriteResult:
-      return "Write Result";
+      return "Write";
     case TomasuloState::kCommit:
       return "Commit";
     default:

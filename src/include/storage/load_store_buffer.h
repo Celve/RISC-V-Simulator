@@ -11,11 +11,14 @@ namespace riscv {
 
 class LoadStoreBufferEntry : public ReservationStationEntry {
  public:
-  void SetA(u32 value);
   void IncreaseCount(int delta) { count_ += delta; }
+
+  u32 GetCount() const { return count_; }
 
   bool IsCompleted() { return count_ == 3; }
   bool IsCalculated() { return calculated_; }
+
+  void MakeCalculated() { calculated_ = true; }
 
   void Init();
 
@@ -34,7 +37,9 @@ class LoadStoreBuffer {
   void SetQk(int index, u32 value) { entries_write_[index].SetQk(value); }
   void SetDest(int index, u32 value) { entries_write_[index].SetDest(value); }
   void SetA(int index, u32 value) { entries_write_[index].SetA(value); }
+  void SetIns(int index, RiscvIns ins) { entries_write_[index].SetIns(ins); }
   void MakeBusy(int index) { entries_write_[index].MakeBusy(); }
+  void MakeCalculated(int index) { entries_write_[index].MakeCalculated(); }
   void IncreaseReadyCount(int delta) { ready_count_write_ += delta; }
 
   u32 GetVj(int index) { return entries_read_[index].GetVj(); }
@@ -55,8 +60,10 @@ class LoadStoreBuffer {
   void GetNext(int &index) { entries_read_.Next(index); }
 
   bool IsEmpty() { return entries_read_.Empty(); }
+  bool IsFull() { return entries_read_.Full(); }
   bool IsReady(int index);  // stands for its readiness for store or load in memory and the calculation of address
   bool IsCompleted(int index) { return entries_read_[index].IsCompleted(); }
+  bool IsCalculated(int index) { return entries_read_[index].IsCalculated(); }
 
   void Update();
   void Reset();

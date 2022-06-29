@@ -17,6 +17,7 @@
 #include "storage/reservation_station.h"
 #include "tomasulo/tomasulo.h"
 #include "unit/arithmetic_logic_unit.h"
+#include "unit/memory_cell.h"
 
 char hexs[MAX_CHARS_PER_LINE];
 riscv::Registers *regs;
@@ -29,6 +30,7 @@ riscv::CommonDataBus *cdb;
 riscv::BranchPredictor *bp;
 riscv::ArithmeticLogicUnit *general_calc;
 riscv::ArithmeticLogicUnit *address_calc;
+riscv::MemoryCell *mc;
 
 riscv::Tomasulo *tomasulo;
 
@@ -43,7 +45,8 @@ void SetUp() {
   bp = new riscv::BranchPredictor;
   general_calc = new riscv::ArithmeticLogicUnit;
   address_calc = new riscv::ArithmeticLogicUnit;
-  tomasulo = new riscv::Tomasulo(regs, memory, iq, rob, rss, lsb, cdb, bp, general_calc, address_calc);
+  mc = new riscv::MemoryCell(memory);
+  tomasulo = new riscv::Tomasulo(regs, memory, iq, rob, rss, lsb, cdb, bp, general_calc, address_calc, mc);
 }
 
 void TearDown() {
@@ -57,6 +60,7 @@ void TearDown() {
   delete bp;
   delete general_calc;
   delete address_calc;
+  delete mc;
   delete tomasulo;
 }
 
@@ -79,9 +83,18 @@ void Input() {
 }
 
 void Execute() {
-  unsigned cycles = 0;
+  int cycles = 0;
   while (true) {
     ++cycles;
+    if (cycles == 1000000) {
+      std::cerr << "Get 1000000" << std::endl;
+    } else if (cycles == 10000000) {
+      std::cerr << "Get 10000000" << std::endl;
+    } else if (cycles == 50000000) {
+      std::cerr << "Get 50000000" << std::endl;
+    } else if (cycles == 100000000) {
+      std::cerr << "Get 100000000" << std::endl;
+    }
     bool state = false;
     /* fetch */
     state |= tomasulo->Fetch();
@@ -97,26 +110,28 @@ void Execute() {
     state |= tomasulo->Commit();
     /* update */
     tomasulo->Update();
-    if (!state) {
+    if (!state && rob->IsEmpty()) {
       printf("%u\n", regs->GetReg(10) & 0xFFU);
       break;
     }
-    regs->Print();
-    puts("");
-    iq->Print();
-    puts("");
-    rss->Print();
-    puts("");
-    rob->Print();
-    puts("");
-    lsb->Print();
-    puts("");
-    puts("");
-    sleep(1);
+    // regs->Print();
+    // puts("");
+    // iq->Print();
+    // puts("");
+    // rss->Print();
+    // puts("");
+    // rob->Print();
+    // puts("");
+    // lsb->Print();
+    // puts("");
+    // printf("Current pc: %x cycle: %d\n", regs->GetPc(), cycles);
+    // std::cout << cycles << " ";
+    // puts("");
   }
 }
 
 int main() {
+  // freopen("data/testcases/multiarray.data", "r", stdin);
   SetUp();
   Input();
   Execute();
