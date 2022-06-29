@@ -102,7 +102,7 @@ void Execute() {
     /* update */
     tomasulo->Update();
     if (!state && rob->IsEmpty()) {
-      std::cerr << cycles << std::endl;
+      // std::cerr << cycles << std::endl;
       printf("%u\n", regs->GetReg(10) & 0xFFU);
       break;
     }
