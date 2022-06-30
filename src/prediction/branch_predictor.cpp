@@ -2,21 +2,18 @@
 
 namespace riscv {
 
-BranchPredictorUnit::BranchPredictorUnit() { counter_ = 0; }
-
-bool BranchPredictorUnit::Predict() { return (counter_ & 0x2) != 0; }
-
-void BranchPredictorUnit::Feedback(bool is_taken) {
-  if (is_taken && counter_ != 0b11) {
-    ++counter_;
-  }
-  if (!is_taken && counter_ != 0b00) {
-    --counter_;
+BranchPredictor::BranchPredictor() {
+  for (int i = 0; i < MEMORY_SIZE; i++) {
+    counter_[i] = 0;
+    history_[i] = 0;
   }
 }
 
-bool BranchPredictor::Predict(u32 addr) { return bps_[addr].Predict(); }
+bool BranchPredictor::Predict(u32 addr) { return (counter_[addr + history_[addr]] & 2) != 0; }
 
-void BranchPredictor::Feedback(u32 addr, bool is_taken) { bps_[addr].Feedback(is_taken); }
+void BranchPredictor::Feedback(u32 addr, bool is_taken) {
+  counter_[addr + history_[addr]] = (counter_[addr + history_[addr]] << 1) | int(is_taken);
+  counter_[addr + history_[addr]] = (counter_[addr + history_[addr]] << 1);
+}
 
 }  // namespace riscv
