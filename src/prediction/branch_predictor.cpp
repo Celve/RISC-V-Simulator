@@ -9,17 +9,27 @@ BranchPredictor::BranchPredictor() {
   memset(history_, 0, sizeof(history_));
 }
 
-bool BranchPredictor::Predict(u32 addr) { return (counter_[addr + history_[addr]] & 2) != 0; }
+u32 BranchPredictor::Get(u32 addr) {
+  if (mapping_.find(addr) == mapping_.end()) {
+    return mapping_[addr] = count_++;
+  }
+  return mapping_[addr];
+}
+
+bool BranchPredictor::Predict(u32 addr) {
+  auto curr = Get(addr);
+  return (counter_[curr][history_[curr]] & 2) != 0;
+}
 
 void BranchPredictor::Feedback(u32 addr, bool is_taken) {
-  auto real_addr = addr + history_[addr];
+  auto curr = Get(addr);
   if (is_taken) {
-    counter_[real_addr] = (counter_[real_addr] == 3 ? 3 : counter_[real_addr] + 1);
+    counter_[curr][history_[curr]] = (counter_[curr][history_[curr]] == 3 ? 3 : counter_[curr][history_[curr]] + 1);
   } else {
-    counter_[real_addr] = (counter_[real_addr] == 0 ? 0 : counter_[real_addr] - 1);
+    counter_[curr][history_[curr]] = (counter_[curr][history_[curr]] == 0 ? 0 : counter_[curr][history_[curr]] - 1);
   }
-  history_[addr] = (history_[addr] << 1) | int(is_taken);
-  history_[addr] &= 3;
+  history_[curr] = (history_[curr] << 1) | int(is_taken);
+  history_[curr] &= 0xF;
 }
 
 }  // namespace riscv
