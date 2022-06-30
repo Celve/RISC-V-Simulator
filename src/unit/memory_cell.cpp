@@ -8,52 +8,69 @@
 
 namespace riscv {
 
-bool MemoryCell::Load(LoadStoreBufferEntry &entry, u32 address, u32 &result) {
-  entry.IncreaseCount(1);
-  if (!entry.IsCompleted()) {
-    return false;
+void MemoryCell::Load(const RiscvInsType &ins, u32 address) {
+  count_read_ = 0;
+  ins_write_ = ins;
+  address_write_ = address;
+}
+
+void MemoryCell::Store(const RiscvInsType &ins, u32 address, u32 value) {
+  count_read_ = 0;
+  ins_write_ = ins;
+  address_write_ = address;
+  input_write_ = value;
+}
+
+void MemoryCell::Execute() {
+  if (count_read_ == 3) {
+    return;
   }
-  auto ins = entry.GetIns().GetInsType();
-  switch (ins) {
+  count_write_ = count_read_ + 1;
+  if (count_write_ != 3) {
+    return;
+  }
+  switch (ins_read_) {
     case RiscvInsType::LB:
-      result = Extend8(memory_->GetByte(address));
-      return true;
+      output_write_ = Extend8(memory_->GetByte(address_read_));
+      break;
     case RiscvInsType::LH:
-      result = Extend16(memory_->GetHalf(address));
-      return true;
+      output_write_ = Extend16(memory_->GetHalf(address_read_));
+      break;
     case RiscvInsType::LW:
-      result = memory_->GetWord(address);
-      return true;
+      output_write_ = memory_->GetWord(address_read_);
+      break;
     case RiscvInsType::LBU:
-      result = memory_->GetByte(address);
-      return true;
+      output_write_ = memory_->GetByte(address_read_);
+      break;
     case RiscvInsType::LHU:
-      result = memory_->GetHalf(address);
-      return true;
+      output_write_ = memory_->GetHalf(address_read_);
+      break;
+    case RiscvInsType::SB:
+      memory_->SetByte(address_read_, input_read_);
+      break;
+    case RiscvInsType::SH:
+      memory_->SetHalf(address_read_, input_read_);
+      break;
+    case RiscvInsType::SW:
+      memory_->SetWord(address_read_, input_read_);
+      break;
     default:
-      return false;
+      break;
   }
 }
 
-bool MemoryCell::Store(LoadStoreBufferEntry &entry, u32 address, u32 value) {
-  entry.IncreaseCount(1);
-  if (!entry.IsCompleted()) {
-    return false;
-  }
-  auto ins = entry.GetIns().GetInsType();
-  switch (ins) {
-    case RiscvInsType::SB:
-      memory_->SetByte(address, value);
-      return true;
-    case RiscvInsType::SH:
-      memory_->SetHalf(address, value);
-      return true;
-    case RiscvInsType::SW:
-      memory_->SetWord(address, value);
-      return true;
-    default:
-      return false;
-  }
+void MemoryCell::Update() {
+  ins_read_ = ins_write_;
+  address_read_ = address_write_;
+  output_read_ = output_write_;
+  input_read_ = input_write_;
+  count_read_ = count_write_;
 }
+
+bool MemoryCell::IsCompleted() { return count_read_ == 3; }
+
+bool MemoryCell::AlmostDone() { return count_read_ == 2; }
+
+u32 MemoryCell::GetValue() { return output_read_; }
 
 }  // namespace riscv

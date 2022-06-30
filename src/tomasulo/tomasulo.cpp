@@ -228,6 +228,24 @@ bool Tomasulo::Execute() {
   return true;
 }
 
+void Tomasulo::SendToMemoryCell(int lsb_index) {
+  auto ins = lsb_->GetIns(lsb_index);
+  if (!lsb_->IsReady(lsb_index)) {
+    return;
+  }
+  if (ins.GetGeneralType() == RiscvGeneralType::LType) {
+    if (!lsb_->IsSent(lsb_index)) {
+      mc_->Load(ins.GetInsType(), lsb_->GetA(lsb_index));
+      lsb_->MakeSent(lsb_index);
+    }
+  } else if (ins.GetGeneralType() == RiscvGeneralType::SType) {
+    if (!lsb_->IsSent(lsb_index)) {
+      mc_->Store(ins.GetInsType(), lsb_->GetA(lsb_index), lsb_->GetVk(lsb_index));
+      lsb_->MakeSent(lsb_index);
+    }
+  }
+}
+
 bool Tomasulo::LoadAndStore() {
   if (lsb_->IsEmpty()) {
     return false;
@@ -237,18 +255,30 @@ bool Tomasulo::LoadAndStore() {
     return false;
   }
 
+  int lsb_next_index = lsb_->GetFront();
+  lsb_->GetNext(lsb_next_index);
+  // if (lsb_next_index != INVALID_ENTRY && mc_->IsCompleted()) {
+  // SendToMemoryCell(lsb_next_index);
+  // }
+
   auto ins = lsb_->GetIns(lsb_index);
   if (ins.GetGeneralType() == RiscvGeneralType::LType) {
-    u32 result;
-    if (mc_->Load(lsb_->GetEntry(lsb_index), lsb_->GetA(lsb_index), result)) {
-      auto rob_index = lsb_->GetDest(lsb_index);
-      cdb_->Push(rob_index, result);
-      rob_->SetState(rob_index, TomasuloState::kExecute);
-      lsb_->Pop();
+    if (!lsb_->IsSent(lsb_index)) {
+      mc_->Load(ins.GetInsType(), lsb_->GetA(lsb_index));
+      lsb_->MakeSent(lsb_index);
+    } else {
+      if (mc_->IsCompleted()) {
+        auto rob_index = lsb_->GetDest(lsb_index);
+        cdb_->Push(rob_index, mc_->GetValue());
+        rob_->SetState(rob_index, TomasuloState::kExecute);
+        lsb_->Pop();
+      }
     }
   } else {
-    /* s type is just a placeholder in rob, therefore there is no need to update it */
-    if (mc_->Store(lsb_->GetEntry(lsb_index), lsb_->GetA(lsb_index), lsb_->GetVk(lsb_index))) {
+    if (!lsb_->IsSent(lsb_index)) {
+      mc_->Store(ins.GetInsType(), lsb_->GetA(lsb_index), lsb_->GetVk(lsb_index));
+      lsb_->MakeSent(lsb_index);
+    } else if (mc_->IsCompleted()) {
       lsb_->Pop();
     }
   }
@@ -392,6 +422,8 @@ void Tomasulo::Update() {
   iq_->Update();
   cdb_->Update();
   regs_->Update();
+  mc_->Execute();
+  mc_->Update();
 }
 
 }  // namespace riscv

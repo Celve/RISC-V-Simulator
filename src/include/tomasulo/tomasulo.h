@@ -35,6 +35,7 @@ class Tomasulo {
 
   bool Execute();
   bool LoadAndStore();
+  void SendToMemoryCell(int lsb_index);
   bool CalculateAddress();
 
   bool WriteResult();

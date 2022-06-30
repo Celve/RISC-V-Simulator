@@ -10,8 +10,8 @@ namespace riscv {
 void LoadStoreBufferEntry::Init() {
   ReservationStationEntry::Init();
   SetA(INVALID_ADDRESS);
-  count_ = 0;
   calculated_ = false;
+  sent_ = false;
 }
 
 LoadStoreBuffer::LoadStoreBuffer() {
@@ -71,9 +71,7 @@ void LoadStoreBuffer::Print() {
     } else {
       std::cout << GetVk(index) << "\t";
     }
-
-    std::cout << entries_read_[index].GetCount() << "\t"
-              << "\n";
+    std::cout << "\n";
     entries_read_.Next(index);
   }
 }
