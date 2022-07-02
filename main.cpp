@@ -102,7 +102,7 @@ void Execute() {
     /* update */
     tomasulo->Update();
     if (!state && rob->IsEmpty()) {
-      std::cerr << tomasulo->CalcRate() << std::endl;
+      std::cerr << "Predictive success rate: " << tomasulo->CalcRate() << std::endl;
       printf("%u\n", regs->GetReg(10) & 0xFFU);
       break;
     }
