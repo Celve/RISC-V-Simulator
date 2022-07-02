@@ -22,7 +22,9 @@ Tomasulo::Tomasulo(Registers *regs, Memory *memory, InstructionQueue *iq, Reorde
       bp_(bp),
       general_calc_(general_calc),
       address_calc_(address_calc),
-      mc_(mc) {}
+      mc_(mc) {
+  successful_ = failed_ = 0;
+}
 
 /******************************************************************************
  * FETCH
@@ -392,11 +394,13 @@ bool Tomasulo::Commit() {
     // regs_->Print();
     regs_->SetPc(correct_pc);
     auto hexs_pc = rob_->GetPc(rob_index);
+    ++failed_;
     Reset();
     bp_->Feedback(hexs_pc, correct_pc != hexs_pc + 4);
   } else {
     // std::cout << "This is " << std::hex << rob_->GetPc(rob_index) << std::endl;
     // regs_->Print();
+    ++successful_;
     rob_->Pop();
   }
   // TODO(celve): add judgement for appending load and store buffer

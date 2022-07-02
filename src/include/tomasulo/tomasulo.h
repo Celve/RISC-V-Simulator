@@ -48,6 +48,13 @@ class Tomasulo {
 
   void Update();
 
+  double CalcRate() {
+    if (successful_ + failed_ == 0) {
+      return 1;
+    }
+    return 1.0 * successful_ / (successful_ + failed_);
+  }
+
  private:
   Registers *regs_;
   Memory *memory_;
@@ -57,11 +64,12 @@ class Tomasulo {
   LoadStoreBuffer *lsb_;
   CommonDataBus *cdb_;
   BranchPredictor *bp_;
-
   ArithmeticLogicUnit *general_calc_;
   ArithmeticLogicUnit *address_calc_;
-
   MemoryCell *mc_;
+
+  u32 successful_;
+  u32 failed_;
 };
 
 }  // namespace riscv
