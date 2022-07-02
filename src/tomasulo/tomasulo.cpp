@@ -388,15 +388,15 @@ bool Tomasulo::Commit() {
   }
   rob_->IncreaseEnsured(1);
   auto correct_pc = rob_->GetValue(rob_index);
+  auto hexs_pc = rob_->GetPc(rob_index);
+  bp_->Feedback(hexs_pc, correct_pc != hexs_pc + 4);
   if (correct_pc != rob_->GetSupposedPc(rob_index)) {
     // the speculation is wrong, therefore reset
     // std::cout << "This is " << std::hex << rob_->GetPc(rob_index) << std::endl;
     // regs_->Print();
     regs_->SetPc(correct_pc);
-    auto hexs_pc = rob_->GetPc(rob_index);
     ++failed_;
     Reset();
-    bp_->Feedback(hexs_pc, correct_pc != hexs_pc + 4);
   } else {
     // std::cout << "This is " << std::hex << rob_->GetPc(rob_index) << std::endl;
     // regs_->Print();
