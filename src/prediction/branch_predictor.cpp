@@ -29,7 +29,7 @@ void BranchPredictor::Feedback(u32 addr, bool is_taken) {
     counter_[curr][history_[curr]] = (counter_[curr][history_[curr]] == 0 ? 0 : counter_[curr][history_[curr]] - 1);
   }
   history_[curr] = (history_[curr] << 1) | int(is_taken);
-  history_[curr] &= 0xF;
+  history_[curr] &= 0xFF;
 }
 
 }  // namespace riscv
