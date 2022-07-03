@@ -27,10 +27,10 @@ using u8 = uint8_t;
 #define COMMON_DATA_BUS_SIZE 12      // the size of the comon data bus
 #define BRANCH_PREDICTOR_SIZE 64     // the size of branch predictor
 
-#define INVALID_REORDER 0xFFFFFFFFU         // the invalid reorder number
-#define INVALID_REGISTER 0xFFFFFFFFU        // the invalid register number
-#define INVALID_ENTRY (-1)                  // the invalid entry number
-#define INVALID_IMMEDgit aIATE 0xFFFFFFFFU  // the invalid immediate number
-#define INVALID_ADDRESS 0xFFFFFFFFU         // the invalid address number
+#define INVALID_REORDER 0xFFFFFFFFU    // the invalid reorder number
+#define INVALID_REGISTER 0xFFFFFFFFU   // the invalid register number
+#define INVALID_ENTRY (-1)             // the invalid entry number
+#define INVALID_IMMEDIATE 0xFFFFFFFFU  // the invalid immediate number
+#define INVALID_ADDRESS 0xFFFFFFFFU    // the invalid address number
 
 }  // namespace riscv
