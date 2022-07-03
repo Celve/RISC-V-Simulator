@@ -20,15 +20,15 @@ In this stage, it would be sent to the arithmetic logic units for computation. T
 
 ## Load and Store Buffer
 
-Used to load and store with memory. 
+Used to load and store with memory. The load and store takes up three cycles.
 
 ## Common Data Bus
 
-Used to transfer information between hardwares. 
+Used to transfer information between hardwares. It takes one cycle to transfer.
 
 ## Reorder Buffer
 
-Record information with register reordering. 
+Record information with register reordering.
 
 # 🪄Prediction Result
 
@@ -52,4 +52,3 @@ Record information with register reordering.
 |      gcd       |    734    |      67.50%       |       62.50%       |
 |   superloop    |  680834   |      93.82%       |       97.35%       |
 |     naive      |    40     |      100.00%      |      100.00%       |
-
