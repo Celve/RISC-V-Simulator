@@ -73,9 +73,9 @@ void InstructionQueue::Print() {
     auto ins = RiscvIns(hex);
     auto ins_type = ins.GetInsType();
     std::cout << ToString(ins_type) << "\t" << (ins.GetRs() == INVALID_REGISTER ? -1 : ins.GetRs()) << "\t"
-              << (ins.GetRt() == INVALID_REGISTER ? -1 : int(ins.GetRt())) << "\t"
-              << (ins.GetRd() == INVALID_REGISTER ? -1 : int(ins.GetRd())) << "\t"
-              << (ins.GetImm() == INVALID_IMMEDIATE ? -1 : int(ins.GetImm())) << "\n";
+              << (ins.GetRt() == INVALID_REGISTER ? -1 : static_cast<int>(ins.GetRt())) << "\t"
+              << (ins.GetRd() == INVALID_REGISTER ? -1 : static_cast<int>(ins.GetRd())) << "\t"
+              << (ins.GetImm() == INVALID_IMMEDIATE ? -1 : static_cast<int>(ins.GetImm())) << "\n";
     queue_read_.Next(index);
   }
 }
