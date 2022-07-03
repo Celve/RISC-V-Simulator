@@ -65,9 +65,9 @@ bool Tomasulo::Fetch() {
     } else {
       result = regs_->GetReg(rs);
     }
-    supposed_pc = (result + int(ins.GetImm())) & (~1);
+    supposed_pc = (result + static_cast<int>(ins.GetImm())) & (~1);
   } else if (ins.GetInsType() == RiscvInsType::JALR && iq_->IsStalled()) {
-    supposed_pc = (iq_->GetV() + int(ins.GetImm())) & (~1);
+    supposed_pc = (iq_->GetV() + static_cast<int>(ins.GetImm())) & (~1);
     iq_->MakeNoStalled();
   } else if (ins.GetGeneralType() == RiscvGeneralType::BType) {
     if (bp_->Predict(pc)) {
